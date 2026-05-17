@@ -4,6 +4,7 @@ sibling modules (config, render).
 
 from __future__ import annotations
 
+import logging
 import sys
 
 import click
@@ -67,3 +68,49 @@ def preview(config_path: str, out: str, profile: str | None, page: str | None) -
     img = render_mosaic(p.pages[page_name])
     img.save(out)
     click.echo(f"Wrote {out} ({img.width}x{img.height})")
+
+
+@main.command()
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    required=True,
+    help="Path to the YAML config file.",
+)
+@click.option(
+    "--mock",
+    is_flag=True,
+    help="Use an in-memory MockDevice instead of real hardware (dev / CI).",
+)
+@click.option("-v", "--verbose", is_flag=True, help="Enable debug logging.")
+def daemon(config_path: str, mock: bool, verbose: bool) -> None:
+    """Run the Stream Deck daemon (foreground)."""
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+    from sdac.device import Device
+    device: Device
+    if mock:
+        from sdac.device import MockDevice
+        device = MockDevice()
+    else:
+        from sdac.device import DeviceNotFoundError, StreamDeckDevice
+        try:
+            device = StreamDeckDevice.enumerate_first()
+        except DeviceNotFoundError as e:
+            click.echo(str(e), err=True)
+            sys.exit(5)
+    from sdac.daemon import Daemon
+    d = Daemon(device=device, config_path=config_path)
+    try:
+        d.load()
+    except ConfigError as e:
+        click.echo(str(e), err=True)
+        sys.exit(2)
+    click.echo(f"starting daemon: {config_path} (mock={mock})")
+    d.render_current_page()
+    d.start_watching()
+    d.run_forever()
+    click.echo("daemon stopped")

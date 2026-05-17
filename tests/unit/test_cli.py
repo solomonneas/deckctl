@@ -78,3 +78,25 @@ def test_preview_unknown_profile_errors(tmp_path: Path):
     ])
     assert result.exit_code != 0
     assert "ghost" in result.output
+
+
+def test_daemon_command_uses_mock_device_when_flag_set(tmp_path: Path):
+    """The --mock flag is for development/CI. With it, daemon uses MockDevice
+    and exits immediately (because we patch run_forever)."""
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(
+        "version: 1\ndefault_profile: a\nprofiles:\n  a:\n    default_page: home\n"
+        "    pages:\n      home:\n        keys: {}\n"
+    )
+    runner = CliRunner()
+    from unittest.mock import patch
+    with patch("sdac.daemon.Daemon.run_forever", return_value=None):
+        result = runner.invoke(main, ["daemon", "--config", str(cfg), "--mock"])
+    assert result.exit_code == 0, result.output
+    assert "starting" in result.output.lower()
+
+
+def test_daemon_command_unknown_config_errors(tmp_path: Path):
+    runner = CliRunner()
+    result = runner.invoke(main, ["daemon", "--config", str(tmp_path / "missing.yaml")])
+    assert result.exit_code != 0
