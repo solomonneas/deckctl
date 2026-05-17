@@ -41,3 +41,40 @@ def test_validate_comprehensive_succeeds():
     runner = CliRunner()
     result = runner.invoke(main, ["validate", str(FIXTURES / "comprehensive.yaml")])
     assert result.exit_code == 0, result.output
+
+
+def test_preview_writes_png(tmp_path: Path):
+    out = tmp_path / "preview.png"
+    runner = CliRunner()
+    result = runner.invoke(main, [
+        "preview", str(FIXTURES / "comprehensive.yaml"),
+        "--out", str(out),
+    ])
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+    assert out.stat().st_size > 1024  # at least a kilobyte of PNG
+
+
+def test_preview_respects_profile_and_page(tmp_path: Path):
+    out = tmp_path / "stream.png"
+    runner = CliRunner()
+    result = runner.invoke(main, [
+        "preview", str(FIXTURES / "comprehensive.yaml"),
+        "--profile", "streaming",
+        "--page", "home",
+        "--out", str(out),
+    ])
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+
+
+def test_preview_unknown_profile_errors(tmp_path: Path):
+    out = tmp_path / "x.png"
+    runner = CliRunner()
+    result = runner.invoke(main, [
+        "preview", str(FIXTURES / "comprehensive.yaml"),
+        "--profile", "ghost",
+        "--out", str(out),
+    ])
+    assert result.exit_code != 0
+    assert "ghost" in result.output

@@ -11,6 +11,7 @@ import click
 from sdac import __version__
 from sdac.config import load_config
 from sdac.errors import ConfigError
+from sdac.render import render_mosaic
 
 
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
@@ -48,5 +49,21 @@ def validate(config_path: str, strict_perms: bool) -> None:
 @click.option("--profile", default=None, help="Profile name to preview. Defaults to default_profile.")
 @click.option("--page", default=None, help="Page name to preview. Defaults to the profile's default_page.")
 def preview(config_path: str, out: str, profile: str | None, page: str | None) -> None:
-    """Render a profile/page as a mosaic PNG. Implemented in Task 13."""
-    raise click.UsageError("not implemented yet (Task 13)")
+    """Render a profile/page as a mosaic PNG."""
+    try:
+        cfg = load_config(config_path)
+    except ConfigError as e:
+        click.echo(str(e), err=True)
+        sys.exit(2)
+    pname = profile or cfg.default_profile
+    if pname not in cfg.profiles:
+        click.echo(f"unknown profile: {pname}", err=True)
+        sys.exit(3)
+    p = cfg.profiles[pname]
+    page_name = page or p.default_page
+    if page_name not in p.pages:
+        click.echo(f"unknown page: {page_name} in profile {pname}", err=True)
+        sys.exit(4)
+    img = render_mosaic(p.pages[page_name])
+    img.save(out)
+    click.echo(f"Wrote {out} ({img.width}x{img.height})")
