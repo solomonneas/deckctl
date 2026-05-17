@@ -37,6 +37,7 @@ from sdac.actions import (  # noqa: E402, F401
     compound,
     keys,
     navigation,
+    obs,
     opening,
     shell,
     system_audio,
