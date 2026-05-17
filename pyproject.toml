@@ -28,6 +28,7 @@ dependencies = [
     "pilmoji>=2.0",
     "streamdeck>=0.9",
     "watchdog>=4.0",
+    "obsws-python>=1.6",
 ]
 
 [project.optional-dependencies]
