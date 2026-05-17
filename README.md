@@ -2,9 +2,9 @@
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 2b (current). `sdac daemon` runs against a real Stream Deck MK.2; `sdac install-service` registers a systemd user unit + udev rule so it autostarts at login; `sdac doctor` reports device + deps + config + service status. All non-OBS action types execute. OBS execution lands in Phase 3; Windows port lands in Phase 4.
+**Status:** Phase 3 (current). `sdac daemon` runs against a real Stream Deck MK.2; all 21 action types execute including OBS scene/recording/streaming/replay/virtualcam/input-mute controls over the LAN; indicator-bound keys reflect live OBS state. `sdac install-service` registers a systemd user unit + udev rule. `sdac doctor` reports device + deps + config + service + OBS reachability. Windows port lands in Phase 4.
 
-## Capabilities (Phase 1 + 2a + 2b)
+## Capabilities (Phase 1 + 2a + 2b + 3)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
 - Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
@@ -12,8 +12,10 @@ Cross-platform declarative driver for the Elgato Stream Deck. One YAML config pr
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
 - Hot-reload the config without restarting the daemon.
+- Execute OBS actions over the LAN: scene switch, recording/streaming/replay/virtualcam toggle, audio mute.
+- Live state indicators: keys bound to OBS recording/streaming/replay/scene/mute auto-update when OBS state changes.
 - Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
-- `sdac doctor` reports on device, deps, service status, and config — exits non-zero if anything fails.
+- `sdac doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
 
 ## Install
 
@@ -117,6 +119,42 @@ sdac doctor --config ~/.config/sdac/config.yaml  # also validates the config
 ```
 
 Output is a tabular `PASS / WARN / FAIL` per check (device, libhidapi, python_deps, system_binaries, udev, service, config). Exit code is non-zero if any check fails.
+
+## OBS integration (Phase 3)
+
+Configure one or more OBS instances under `obs_hosts:` in your config, then any `obs.*` action can target them by name:
+
+```yaml
+obs_hosts:
+  roc:
+    url: obsws://127.0.0.1:4455/${OBS_ROC_PASS}
+  windows-host:
+    url: obsws://192.168.x.y:4455/${OBS_windows-host_PASS}
+
+profiles:
+  streaming:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon: {text: "Cam", bg: "#1e88e5"}
+            action: {type: obs.scene.switch, host: roc, scene: "Camera"}
+          1:
+            icon:
+              text: "REC"
+              bg_idle: "#424242"
+              bg_active: "#d32f2f"
+            indicator: {bind: obs.recording.state, host: roc}
+            action: {type: obs.recording.toggle, host: roc}
+```
+
+Actions execute via `obs-cmd` on PATH. The daemon also opens a WebSocket connection to each `obs_hosts` entry on startup to subscribe to state events; the REC key above turns red when OBS is actually recording, and back to gray when it stops. Hosts that aren't reachable at daemon startup are logged and skipped — actions targeting them will simply fail at dispatch time.
+
+Indicators support:
+- `obs.recording.state`, `obs.streaming.state`, `obs.replay.state`, `obs.virtualcam.state` — boolean output states
+- `obs.scene.current` — match a `scene:` name; key is active when that scene is the current program scene
+- `obs.input.muted` — match an `input_name:`; key is active when that audio input is muted
 
 ## Action grammar (v1)
 

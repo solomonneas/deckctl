@@ -62,7 +62,7 @@ At least one of `text`, `emoji`, `image` must be set.
 
 ## Actions
 
-**Phase 2a runtime note:** the `obs.*` action types validate in the schema but their handlers currently raise `NotImplementedError` at dispatch. Real OBS execution arrives in Phase 3. All other action types execute normally.
+**Phase 3 runtime note:** all 21 action types execute. OBS actions (`obs.*`) shell out to `obs-cmd` on PATH and target the host named in the action. Indicators bound to OBS state are updated live via a WebSocket subscription to each configured `obs_hosts` entry.
 
 | `type` | Required fields | Optional |
 |---|---|---|
