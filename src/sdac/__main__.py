@@ -1,7 +1,6 @@
 """Allow `python -m sdac`."""
 
-# TODO(Task 2): wire src/sdac/cli.py; suppress until module ships with py.typed/stubs.
-from sdac.cli import main  # type: ignore[import-untyped]
+from sdac.cli import main
 
 if __name__ == "__main__":
     main()
