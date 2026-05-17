@@ -14,6 +14,9 @@ class _NullCtx:
     def switch_profile(self, name: str) -> None:
         pass
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_shell_action_invokes_subprocess_run_with_shell_true():
     action = ShellAction(type="shell", cmd="echo hi")

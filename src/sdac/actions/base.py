@@ -18,6 +18,8 @@ class DaemonContext(Protocol):
 
     def switch_profile(self, name: str) -> None: ...
 
+    def obs_host_url(self, name: str) -> str: ...
+
 
 @runtime_checkable
 class ActionHandler(Protocol):

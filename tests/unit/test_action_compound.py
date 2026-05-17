@@ -13,6 +13,9 @@ class _NullCtx:
     def switch_page(self, name: str) -> None: ...
     def switch_profile(self, name: str) -> None: ...
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_compound_runs_actions_in_order():
     actions = [

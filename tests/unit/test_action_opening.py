@@ -11,6 +11,9 @@ class _NullCtx:
     def switch_page(self, name: str) -> None: ...
     def switch_profile(self, name: str) -> None: ...
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_open_url_calls_platform_open_url():
     action = OpenUrlAction(type="open.url", url="https://example.com")

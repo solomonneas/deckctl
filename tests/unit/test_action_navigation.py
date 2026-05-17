@@ -16,6 +16,9 @@ class _RecordingCtx:
     def switch_profile(self, name: str) -> None:
         self.profiles.append(name)
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_page_go_calls_ctx_switch_page():
     ctx = _RecordingCtx()

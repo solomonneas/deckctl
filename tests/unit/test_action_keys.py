@@ -11,6 +11,9 @@ class _NullCtx:
     def switch_page(self, name: str) -> None: ...
     def switch_profile(self, name: str) -> None: ...
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_key_chord_calls_platform_send_chord():
     action = KeyChordAction(type="key.chord", keys="ctrl+shift+t")

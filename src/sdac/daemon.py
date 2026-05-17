@@ -69,6 +69,10 @@ class Daemon:
             self._current_page = self._config.profiles[name].default_page
         self.render_current_page()
 
+    def obs_host_url(self, name: str) -> str:
+        """Phase 3 Task 4 wires this to self._config.obs_hosts."""
+        raise NotImplementedError("obs_host_url is wired in Phase 3 Task 4")
+
     # ----- Lifecycle -----
 
     def load(self) -> None:

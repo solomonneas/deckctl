@@ -19,6 +19,9 @@ class _NullCtx:
     def switch_page(self, name: str) -> None: ...
     def switch_profile(self, name: str) -> None: ...
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_volume_up_calls_platform_volume_up_with_step():
     action = SystemVolumeUpAction(type="system.volume.up", step=7)

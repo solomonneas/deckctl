@@ -22,6 +22,9 @@ class _FakeCtx:
     def switch_profile(self, name: str) -> None:
         self.profile_switches.append(name)
 
+    def obs_host_url(self, name: str) -> str:
+        raise KeyError(f"unknown obs host: {name}")
+
 
 def test_register_decorator_adds_to_handlers():
     initial = set(HANDLERS)
