@@ -48,8 +48,8 @@ def _vk_for(token: str) -> int:
     if token in _VK_MODIFIERS:
         return _VK_MODIFIERS[token]
     if len(token) == 1:
-        # VkKeyScanW returns the VK code in the low byte and shift state in the high byte.
-        vk: int = win32api.VkKeyScanW(token) & 0xFF
+        # VkKeyScan returns the VK code in the low byte and shift state in the high byte.
+        vk: int = win32api.VkKeyScan(token) & 0xFF
         return vk
     raise ValueError(f"unrecognized chord token: {token!r}")
 
@@ -68,7 +68,7 @@ def type_text(text: str) -> None:
     """Type a literal string via win32 one character at a time."""
     import win32api
     for ch in text:
-        vk_and_shift = win32api.VkKeyScanW(ch)
+        vk_and_shift = win32api.VkKeyScan(ch)
         vk = vk_and_shift & 0xFF
         shift = (vk_and_shift >> 8) & 0xFF
         if shift & 1:

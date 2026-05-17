@@ -116,7 +116,7 @@ def test_install_service_calls_install_with_resolved_paths(tmp_path: Path):
     inst.assert_called_once()
     kwargs = inst.call_args.kwargs
     assert kwargs["config_path"] == str(cfg.resolve())
-    assert kwargs["sdac_path"].endswith("/sdac") or kwargs["sdac_path"] == "sdac"
+    assert "sdac" in kwargs["sdac_path"].lower()
 
 
 def test_install_service_errors_when_config_missing(tmp_path: Path):

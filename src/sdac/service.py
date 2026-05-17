@@ -32,9 +32,14 @@ class ServiceError(SdacError):
 
 
 def user_unit_path() -> Path:
-    """Path to the systemd user unit for the current user."""
+    """Path to the systemd user unit for the current user.
+
+    On Windows this returns a path under `~/.config/systemd/user/` for
+    consistency, even though Windows doesn't run systemd. Callers that
+    actually install the unit gate on `sys.platform` separately.
+    """
     xdg = os.environ.get("XDG_CONFIG_HOME")
-    base = Path(xdg) if xdg else Path(os.environ["HOME"]) / ".config"
+    base = Path(xdg) if xdg else Path.home() / ".config"
     return base / "systemd" / "user" / SERVICE_NAME
 
 
