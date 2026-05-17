@@ -49,3 +49,10 @@ def test_text_with_emoji():
     k = _key(IconSpec(text="Tests", emoji="🧪", bg="#1e88e5"))
     img = render_key(k, state="idle")
     _assert_matches_golden(img, "text_emoji_blue.png")
+
+
+def test_image_background_centered_and_scaled():
+    img_path = Path(__file__).parent.parent / "fixtures" / "images" / "test-icon.png"
+    k = _key(IconSpec(image=str(img_path), bg="#222222"))
+    img = render_key(k, state="idle")
+    _assert_matches_golden(img, "image_background.png")

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import io
 from importlib.resources import files
+from pathlib import Path
 from typing import Literal
 
 from PIL import Image, ImageDraw, ImageFont
@@ -55,6 +56,8 @@ def render_key(key: KeyConfig, *, state: State = "idle") -> Image.Image:
     bg = _bg_color(key.icon, state)
     fg = key.icon.fg or DEFAULT_FG
     img = Image.new("RGB", (KEY_SIZE, KEY_SIZE), bg)
+    if key.icon.image:
+        _composite_image(img, key.icon.image)
     if key.icon.emoji and key.icon.text:
         _draw_emoji_and_text(img, key.icon.emoji, key.icon.text, fg)
     elif key.icon.emoji:
@@ -62,6 +65,20 @@ def render_key(key: KeyConfig, *, state: State = "idle") -> Image.Image:
     elif key.icon.text:
         _draw_text(ImageDraw.Draw(img), key.icon.text, fg)
     return img
+
+
+def _composite_image(canvas: Image.Image, path: str) -> None:
+    p = Path(path)
+    if not p.exists():
+        raise RenderError(f"icon image not found: {p}")
+    try:
+        src = Image.open(p).convert("RGBA")
+    except OSError as e:
+        raise RenderError(f"cannot read icon image {p}: {e}") from e
+    src.thumbnail((KEY_SIZE - 8, KEY_SIZE - 8), Image.Resampling.LANCZOS)
+    x = (KEY_SIZE - src.width) // 2
+    y = (KEY_SIZE - src.height) // 2
+    canvas.paste(src, (x, y), src)
 
 
 def _draw_emoji_only(img: Image.Image, emoji: str) -> None:
