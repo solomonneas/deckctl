@@ -17,8 +17,8 @@ import pytest
 if sys.platform.startswith("win"):
     pytest.skip("Linux-shape integration test", allow_module_level=True)
 
-from sdac.daemon import Daemon  # noqa: E402
-from sdac.device import MockDevice  # noqa: E402
+from sdac.daemon import Daemon
+from sdac.device import MockDevice
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "configs" / "daemon_smoke.yaml"
 
