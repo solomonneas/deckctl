@@ -29,6 +29,9 @@ dependencies = [
     "streamdeck>=0.9",
     "watchdog>=4.0",
     "obsws-python>=1.6",
+    'python-xlib>=0.33 ; sys_platform == "linux"',
+    'pywin32>=306 ; sys_platform == "win32"',
+    'psutil>=5.9 ; sys_platform == "win32"',
 ]
 
 [project.optional-dependencies]
@@ -38,6 +41,13 @@ dev = [
     "ruff>=0.4",
     "mypy>=1.10",
     "types-PyYAML",
+]
+linux = [
+    'python-xlib>=0.33 ; sys_platform == "linux"',
+]
+windows = [
+    'pywin32>=306 ; sys_platform == "win32"',
+    'psutil>=5.9 ; sys_platform == "win32"',
 ]
 
 [project.scripts]
@@ -70,3 +80,8 @@ python_version = "3.11"
 strict = true
 warn_unused_ignores = true
 files = ["src/sdac"]
+
+[[tool.mypy.overrides]]
+module = ["sdac.watchers._linux", "sdac.watchers._windows"]
+ignore_missing_imports = true
+follow_imports = "skip"
