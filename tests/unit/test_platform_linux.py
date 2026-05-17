@@ -11,7 +11,8 @@ from unittest.mock import patch
 import pytest
 
 WINDOWS = sys.platform.startswith("win")
-pytestmark = pytest.mark.skipif(WINDOWS, reason="Linux platform shim")
+if WINDOWS:
+    pytest.skip("Linux platform shim", allow_module_level=True)
 
 from sdac.platform._linux import (  # noqa: E402
     media_next,
