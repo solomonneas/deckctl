@@ -161,3 +161,20 @@ def uninstall_service(keep_udev: bool) -> None:
         click.echo(str(e), err=True)
         sys.exit(6)
     click.echo("uninstalled" + ("" if not keep_udev else " (udev rule kept)"))
+
+
+@main.command()
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    default=None,
+    help="Optional config file to validate.",
+)
+def doctor(config_path: str | None) -> None:
+    """Report on device, dependencies, service status, and config."""
+    from sdac.doctor import Severity, render_report, run_all_checks
+    results = run_all_checks(config_path=config_path)
+    click.echo(render_report(results))
+    if any(r.severity is Severity.FAIL for r in results):
+        sys.exit(7)

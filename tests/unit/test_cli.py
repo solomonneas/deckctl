@@ -141,3 +141,37 @@ def test_uninstall_service_keep_udev_flag():
         result = runner.invoke(main, ["uninstall-service", "--keep-udev"])
     assert result.exit_code == 0, result.output
     un.assert_called_once_with(remove_udev=False)
+
+
+def test_doctor_runs_and_prints_report():
+    runner = CliRunner()
+    result = runner.invoke(main, ["doctor"])
+    # Doctor itself never crashes; even with everything missing it prints a report.
+    assert "device" in result.output
+    assert "python_deps" in result.output
+    assert "system_binaries" in result.output
+
+
+def test_doctor_with_config_path():
+    runner = CliRunner()
+    result = runner.invoke(main, [
+        "doctor",
+        "--config",
+        str(FIXTURES / "minimal.yaml"),
+    ])
+    assert "config" in result.output
+    # minimal.yaml is valid → PASS line for config
+    assert "PASS" in result.output
+
+
+def test_doctor_exit_nonzero_on_any_fail():
+    """If any check returns FAIL, sdac doctor exits non-zero."""
+    from unittest.mock import patch
+
+    from sdac.doctor import CheckResult, Severity
+
+    fail_result = [CheckResult(name="device", severity=Severity.FAIL, message="x")]
+    runner = CliRunner()
+    with patch("sdac.doctor.run_all_checks", return_value=fail_result):
+        result = runner.invoke(main, ["doctor"])
+    assert result.exit_code != 0
