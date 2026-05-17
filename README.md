@@ -2,9 +2,9 @@
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 2a (current). `sdac daemon` runs against a real Stream Deck MK.2 (Linux only). All non-OBS action types execute: shell, key.chord, key.text, open.url/app, system.volume.*, media.*, page.go, profile.switch, compound. Hot reload on config edit. Service install (systemd unit) lands in Phase 2b; OBS execution lands in Phase 3; Windows port lands in Phase 4.
+**Status:** Phase 2b (current). `sdac daemon` runs against a real Stream Deck MK.2; `sdac install-service` registers a systemd user unit + udev rule so it autostarts at login; `sdac doctor` reports device + deps + config + service status. All non-OBS action types execute. OBS execution lands in Phase 3; Windows port lands in Phase 4.
 
-## Capabilities (Phase 1 + 2a)
+## Capabilities (Phase 1 + 2a + 2b)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
 - Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
@@ -12,6 +12,8 @@ Cross-platform declarative driver for the Elgato Stream Deck. One YAML config pr
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
 - Hot-reload the config without restarting the daemon.
+- Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
+- `sdac doctor` reports on device, deps, service status, and config — exits non-zero if anything fails.
 
 ## Install
 
@@ -86,6 +88,35 @@ sdac daemon --config ~/.config/sdac/config.yaml --mock -v
 The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `sdac install-service` command that registers a systemd user unit so it autostarts at login.
 
 Edit the config file while the daemon is running — it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
+
+## Install as a service (Phase 2b, Linux)
+
+Once your config works the way you want via `sdac daemon`, register it as a systemd user unit so it autostarts at login:
+
+```bash
+sdac install-service --config ~/.config/sdac/config.yaml
+```
+
+This:
+1. Writes `~/.config/systemd/user/sdac.service` pointing at your config.
+2. Installs `/etc/udev/rules.d/60-streamdeck.rules` via `sudo` (prompts once for your password) so the device is reachable to any logged-in user — needed for the unit to find the Deck at boot.
+3. Reloads udev, daemon-reloads systemd, enables and starts the service.
+
+To stop and remove:
+
+```bash
+sdac uninstall-service        # removes systemd unit AND udev rule (sudo)
+sdac uninstall-service --keep-udev   # leaves the udev rule in place
+```
+
+Health check at any time:
+
+```bash
+sdac doctor                                      # full report
+sdac doctor --config ~/.config/sdac/config.yaml  # also validates the config
+```
+
+Output is a tabular `PASS / WARN / FAIL` per check (device, libhidapi, python_deps, system_binaries, udev, service, config). Exit code is non-zero if any check fails.
 
 ## Action grammar (v1)
 
