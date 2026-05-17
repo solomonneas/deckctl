@@ -12,3 +12,10 @@ htmlcov/
 .coverage
 preview*.png
 !tests/fixtures/goldens/*.png
+
+# Claude / superpowers artifacts (per repo-hygiene rule)
+.claude/
+.claude.local/
+**/memory-handoffs/
+.cursor/
+.windsurf/
