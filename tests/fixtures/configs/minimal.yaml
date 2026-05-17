@@ -1,0 +1,8 @@
+version: 1
+default_profile: coding
+profiles:
+  coding:
+    default_page: home
+    pages:
+      home:
+        keys: {}
