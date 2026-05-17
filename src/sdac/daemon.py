@@ -19,10 +19,11 @@ from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
 from sdac.actions import get_handler
-from sdac.config import Config, Indicator, load_config
+from sdac.config import Config, Indicator, ProfileRule, load_config
 from sdac.device import Device, KeyEvent
 from sdac.obs.client import OBSClient, OBSConnectError, OBSEvent
 from sdac.render import KEY_SIZE, render_key
+from sdac.watchers import ActiveWindow, NullWatcher, Watcher
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +37,13 @@ class Daemon:
     device unplug (Task 14).
     """
 
-    def __init__(self, device: Device, config_path: str | Path) -> None:
+    def __init__(
+        self,
+        device: Device,
+        config_path: str | Path,
+        *,
+        watcher: Watcher | None = None,
+    ) -> None:
         self._device = device
         self._config_path = Path(config_path)
         self._config: Config | None = None
@@ -47,6 +54,7 @@ class Daemon:
         self._indicator_state: dict[tuple[str, str, str | None], bool] = {}
         self._obs_clients: list[OBSClient] = []
         self._device.register_key_callback(self._on_key)
+        self._watcher: Watcher = watcher if watcher is not None else NullWatcher()
 
     # ----- DaemonContext protocol -----
 
@@ -177,6 +185,31 @@ class Daemon:
             c.stop()
         self._obs_clients.clear()
 
+    # ----- Active-window auto-switch -----
+
+    def start_watching_windows(self) -> None:
+        """Subscribe to the active-window watcher; switch profile on match."""
+        self._watcher.start(self._on_active_window)
+
+    def stop_watching_windows(self) -> None:
+        self._watcher.stop()
+
+    def _on_active_window(self, window: ActiveWindow) -> None:
+        with self._lock:
+            if self._config is None:
+                return
+            rules = list(self._config.profile_rules)
+        for rule in rules:
+            if self._rule_matches(rule, window):
+                if rule.profile != self._current_profile:
+                    self.switch_profile(rule.profile)
+                return
+
+    def _rule_matches(self, rule: ProfileRule, window: ActiveWindow) -> bool:
+        if window.app_class and window.app_class in rule.when.app_class:
+            return True
+        return bool(window.app_name and window.app_name in rule.when.app_name)
+
     # ----- Lifecycle -----
 
     def load(self) -> None:
@@ -305,11 +338,13 @@ class Daemon:
             signal.signal(sig, handle)
 
         self.start_obs_clients()
+        self.start_watching_windows()
         try:
             while not stop.is_set():
                 stop.wait(timeout=1.0)
         finally:
             self.stop_obs_clients()
+            self.stop_watching_windows()
             self.stop_watching()
             if self._device.is_open:
                 self._device.close()

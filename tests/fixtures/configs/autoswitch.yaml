@@ -1,0 +1,28 @@
+version: 1
+default_profile: coding
+profile_rules:
+  - profile: streaming
+    when:
+      app_class: [obs]
+      app_name:  [obs64.exe]
+  - profile: browsing
+    when:
+      app_class: [chromium, firefox]
+      app_name:  [chrome.exe, firefox.exe]
+
+profiles:
+  coding:
+    default_page: home
+    pages:
+      home:
+        keys: {}
+  streaming:
+    default_page: home
+    pages:
+      home:
+        keys: {}
+  browsing:
+    default_page: home
+    pages:
+      home:
+        keys: {}

@@ -104,7 +104,8 @@ def daemon(config_path: str, mock: bool, verbose: bool) -> None:
             click.echo(str(e), err=True)
             sys.exit(5)
     from sdac.daemon import Daemon
-    d = Daemon(device=device, config_path=config_path)
+    from sdac.watchers import make_watcher
+    d = Daemon(device=device, config_path=config_path, watcher=make_watcher())
     try:
         d.load()
     except ConfigError as e:
