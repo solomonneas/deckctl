@@ -100,3 +100,26 @@ def test_daemon_command_unknown_config_errors(tmp_path: Path):
     runner = CliRunner()
     result = runner.invoke(main, ["daemon", "--config", str(tmp_path / "missing.yaml")])
     assert result.exit_code != 0
+
+
+def test_install_service_calls_install_with_resolved_paths(tmp_path: Path):
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(
+        "version: 1\ndefault_profile: a\nprofiles:\n  a:\n    default_page: home\n"
+        "    pages:\n      home:\n        keys: {}\n"
+    )
+    from unittest.mock import patch
+    runner = CliRunner()
+    with patch("sdac.service.install_service") as inst:
+        result = runner.invoke(main, ["install-service", "--config", str(cfg)])
+    assert result.exit_code == 0, result.output
+    inst.assert_called_once()
+    kwargs = inst.call_args.kwargs
+    assert kwargs["config_path"] == str(cfg.resolve())
+    assert kwargs["sdac_path"].endswith("/sdac") or kwargs["sdac_path"] == "sdac"
+
+
+def test_install_service_errors_when_config_missing(tmp_path: Path):
+    runner = CliRunner()
+    result = runner.invoke(main, ["install-service", "--config", str(tmp_path / "nope.yaml")])
+    assert result.exit_code != 0

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from pathlib import Path
 
 import click
 
@@ -114,3 +115,33 @@ def daemon(config_path: str, mock: bool, verbose: bool) -> None:
     d.start_watching()
     d.run_forever()
     click.echo("daemon stopped")
+
+
+@main.command("install-service")
+@click.option(
+    "--config",
+    "config_path",
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    required=True,
+    help="Path to the YAML config file. Stored absolutely in the unit.",
+)
+@click.option(
+    "--sdac-path",
+    default=None,
+    help="Override the path to the `sdac` binary embedded in the unit. Defaults to `which sdac`.",
+)
+def install_service(config_path: str, sdac_path: str | None) -> None:
+    """Install + enable + start the systemd user unit (and udev rule via sudo)."""
+    import logging
+    import shutil
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    from sdac.service import ServiceError
+    from sdac.service import install_service as _install
+    resolved_sdac = sdac_path or shutil.which("sdac") or "sdac"
+    abs_config = str(Path(config_path).resolve())
+    try:
+        _install(sdac_path=resolved_sdac, config_path=abs_config)
+    except ServiceError as e:
+        click.echo(str(e), err=True)
+        sys.exit(6)
+    click.echo(f"installed: systemd unit + udev rule; service active with --config {abs_config}")
