@@ -45,3 +45,8 @@ def test_mock_device_set_key_image_rejects_out_of_range():
     except IndexError:
         return
     raise AssertionError("expected IndexError for key 99")
+
+
+def test_streamdeckdevice_imports():
+    """The real wrapper module should import even without a device attached."""
+    from sdac.device.streamdeck import DeviceNotFoundError, StreamDeckDevice  # noqa: F401
