@@ -1,9 +1,12 @@
+import sys
 from pathlib import Path
 
 import pytest
 
 from sdac.config import Config, load_config
 from sdac.errors import ConfigError
+
+WINDOWS = sys.platform.startswith("win")
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 
@@ -96,3 +99,42 @@ def test_env_var_substitution_in_action(tmp_path: Path, monkeypatch: pytest.Monk
     )
     cfg = load_config(p)
     assert cfg.profiles["x"].pages["p"].keys[0].action.cmd == "echo hello"
+
+
+@pytest.mark.skipif(WINDOWS, reason="POSIX permission semantics only")
+def test_strict_perms_rejects_world_readable(tmp_path: Path):
+    from sdac.errors import ConfigPermissionError
+    p = tmp_path / "open.yaml"
+    p.write_text(
+        "version: 1\ndefault_profile: x\nprofiles:\n  x:\n    default_page: p\n    "
+        "pages:\n      p:\n        keys: {}\n"
+    )
+    p.chmod(0o644)
+    with pytest.raises(ConfigPermissionError):
+        load_config(p, strict_perms=True)
+
+
+@pytest.mark.skipif(WINDOWS, reason="POSIX permission semantics only")
+def test_loose_perms_emit_warning(tmp_path: Path, recwarn):
+    p = tmp_path / "open.yaml"
+    p.write_text(
+        "version: 1\ndefault_profile: x\nprofiles:\n  x:\n    default_page: p\n    "
+        "pages:\n      p:\n        keys: {}\n"
+    )
+    p.chmod(0o644)
+    load_config(p)  # warn-only by default
+    assert any(
+        "0644" in str(w.message) or "permissions" in str(w.message).lower()
+        for w in recwarn.list
+    )
+
+
+@pytest.mark.skipif(WINDOWS, reason="POSIX permission semantics only")
+def test_strict_perms_passes_on_0600(tmp_path: Path):
+    p = tmp_path / "closed.yaml"
+    p.write_text(
+        "version: 1\ndefault_profile: x\nprofiles:\n  x:\n    default_page: p\n    "
+        "pages:\n      p:\n        keys: {}\n"
+    )
+    p.chmod(0o600)
+    load_config(p, strict_perms=True)  # no exception

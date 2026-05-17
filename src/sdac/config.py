@@ -8,13 +8,15 @@ from __future__ import annotations
 
 import os
 import re
+import sys
+import warnings
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from sdac.errors import ConfigError, EnvVarMissingError
+from sdac.errors import ConfigError, ConfigPermissionError, EnvVarMissingError
 
 MK2_KEY_COUNT = 15  # 5x3 grid
 
@@ -324,9 +326,33 @@ class Config(BaseModel):
 # ---------- Loader ----------
 
 
-def load_config(path: str | Path) -> Config:
-    """Parse and validate a YAML config file. Raises ConfigError on any failure."""
+def _check_perms(path: Path, *, strict: bool) -> None:
+    """POSIX-only permission check. No-op on Windows."""
+    if sys.platform.startswith("win"):
+        return
+    mode = path.stat().st_mode & 0o777
+    if mode & 0o077:
+        msg = (
+            f"{path}: permissions are 0{mode:o}; recommended 0600 to keep secrets safe."
+        )
+        if strict:
+            raise ConfigPermissionError(msg)
+        warnings.warn(msg, stacklevel=2)
+
+
+def load_config(path: str | Path, *, strict_perms: bool = False) -> Config:
+    """Parse and validate a YAML config file.
+
+    Args:
+        path: Path to the YAML file.
+        strict_perms: When True, raise ConfigPermissionError if the file is
+            readable by group or others (POSIX only). Default is warn-only.
+
+    Raises:
+        ConfigError, ConfigPermissionError, EnvVarMissingError.
+    """
     p = Path(path)
+    _check_perms(p, strict=strict_perms)
     try:
         raw: Any = yaml.safe_load(p.read_text())
     except yaml.YAMLError as e:
