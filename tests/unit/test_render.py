@@ -56,3 +56,27 @@ def test_image_background_centered_and_scaled():
     k = _key(IconSpec(image=str(img_path), bg="#222222"))
     img = render_key(k, state="idle")
     _assert_matches_golden(img, "image_background.png")
+
+
+def test_state_active_uses_bg_active():
+    k = _key(IconSpec(text="REC", bg_idle="#424242", bg_active="#d32f2f"))
+    img = render_key(k, state="active")
+    _assert_matches_golden(img, "state_active.png")
+
+
+def test_state_pressed_falls_back_to_idle_when_unspecified():
+    k = _key(IconSpec(text="Build", bg="#43a047"))
+    img = render_key(k, state="pressed")
+    _assert_matches_golden(img, "state_pressed.png")
+
+
+def test_state_error_uses_default_red_when_unspecified():
+    k = _key(IconSpec(text="Err", bg="#1e88e5"))
+    img = render_key(k, state="error")
+    _assert_matches_golden(img, "state_error.png")
+
+
+def test_state_disconnected_uses_default_gray():
+    k = _key(IconSpec(text="Off", bg="#1e88e5"))
+    img = render_key(k, state="disconnected")
+    _assert_matches_golden(img, "state_disconnected.png")
