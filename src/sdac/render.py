@@ -17,10 +17,14 @@ from typing import Literal
 from PIL import Image, ImageDraw, ImageFont
 from pilmoji import Pilmoji  # type: ignore[import-untyped]
 
-from sdac.config import IconSpec, KeyConfig
+from sdac.config import IconSpec, KeyConfig, PageConfig
 from sdac.errors import RenderError
 
 KEY_SIZE = 72  # MK.2 spec
+MK2_COLS = 5
+MK2_ROWS = 3
+MOSAIC_GAP = 8
+PLACEHOLDER_BG = "#000000"
 DEFAULT_BG = "#000000"
 DEFAULT_FG = "#ffffff"
 FONT_RESOURCE = files("sdac.assets.fonts").joinpath("Inter-Bold.ttf")
@@ -129,3 +133,24 @@ def _draw_text(draw: ImageDraw.ImageDraw, text: str, fg: str) -> None:
             return
     font = _load_font(9)
     draw.text((4, 4), text[:8], fill=fg, font=font)
+
+
+def render_mosaic(page: PageConfig, *, state: State = "idle") -> Image.Image:
+    """Compose every key on a page into a single mosaic image.
+
+    Empty key slots render as solid black tiles (the placeholder background).
+    Output dimensions: 5*72 + 4*8 = 392 wide, 3*72 + 2*8 = 232 tall.
+    """
+    w = KEY_SIZE * MK2_COLS + (MK2_COLS - 1) * MOSAIC_GAP
+    h = KEY_SIZE * MK2_ROWS + (MK2_ROWS - 1) * MOSAIC_GAP
+    canvas = Image.new("RGB", (w, h), PLACEHOLDER_BG)
+    for idx in range(MK2_COLS * MK2_ROWS):
+        row = idx // MK2_COLS
+        col = idx % MK2_COLS
+        x = col * (KEY_SIZE + MOSAIC_GAP)
+        y = row * (KEY_SIZE + MOSAIC_GAP)
+        key = page.keys.get(idx)
+        if key is not None:
+            tile = render_key(key, state=state)
+            canvas.paste(tile, (x, y))
+    return canvas

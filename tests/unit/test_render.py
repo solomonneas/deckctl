@@ -13,11 +13,14 @@ from pathlib import Path
 import pytest
 from PIL import Image, ImageChops
 
-from sdac.config import IconSpec, KeyConfig, ShellAction
-from sdac.render import KEY_SIZE, render_key
+from sdac.config import IconSpec, KeyConfig, ShellAction, load_config
+from sdac.render import KEY_SIZE, MK2_COLS, MK2_ROWS, render_key, render_mosaic
 
 GOLDENS = Path(__file__).parent.parent / "fixtures" / "goldens"
 REGEN = os.environ.get("SDAC_REGEN") == "1"
+
+MOSAIC_W = KEY_SIZE * MK2_COLS + (MK2_COLS - 1) * 8
+MOSAIC_H = KEY_SIZE * MK2_ROWS + (MK2_ROWS - 1) * 8
 
 
 def _assert_matches_golden(img: Image.Image, name: str) -> None:
@@ -80,3 +83,20 @@ def test_state_disconnected_uses_default_gray():
     k = _key(IconSpec(text="Off", bg="#1e88e5"))
     img = render_key(k, state="disconnected")
     _assert_matches_golden(img, "state_disconnected.png")
+
+
+def test_render_mosaic_dimensions():
+    cfg = load_config(Path(__file__).parent.parent / "fixtures" / "configs" / "comprehensive.yaml")
+    page = cfg.profiles["coding"].pages["home"]
+    img = render_mosaic(page)
+    assert img.size == (MOSAIC_W, MOSAIC_H)
+    assert img.mode == "RGB"
+
+
+def test_render_mosaic_empty_keys_are_blank():
+    cfg = load_config(Path(__file__).parent.parent / "fixtures" / "configs" / "minimal.yaml")
+    page = cfg.profiles["coding"].pages["home"]
+    img = render_mosaic(page)
+    # All keys are unconfigured → solid black mosaic
+    assert img.getpixel((0, 0)) == (0, 0, 0)
+    assert img.getpixel((MOSAIC_W - 1, MOSAIC_H - 1)) == (0, 0, 0)
