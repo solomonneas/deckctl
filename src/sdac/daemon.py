@@ -13,6 +13,9 @@ import threading
 from pathlib import Path
 
 from PIL import Image
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
+from watchdog.observers import Observer
+from watchdog.observers.api import BaseObserver
 
 from sdac.actions import get_handler
 from sdac.config import Config, load_config
@@ -38,6 +41,7 @@ class Daemon:
         self._current_profile: str | None = None
         self._current_page: str | None = None
         self._lock = threading.RLock()
+        self._observer: BaseObserver | None = None
         self._device.register_key_callback(self._on_key)
 
     # ----- DaemonContext protocol -----
@@ -73,6 +77,56 @@ class Daemon:
             self._config = cfg
             self._current_profile = cfg.default_profile
             self._current_page = cfg.profiles[cfg.default_profile].default_page
+
+    def start_watching(self) -> None:
+        """Begin watching the config file for changes; reload on every modify."""
+        if self._observer is not None:
+            return
+
+        daemon = self
+
+        class _Handler(FileSystemEventHandler):
+            def on_modified(self, event: FileSystemEvent) -> None:
+                if Path(str(event.src_path)).resolve() == daemon._config_path.resolve():
+                    daemon._reload()
+
+            def on_created(self, event: FileSystemEvent) -> None:
+                # Editors that write via rename use create-then-rename.
+                if Path(str(event.src_path)).resolve() == daemon._config_path.resolve():
+                    daemon._reload()
+
+        self._observer = Observer()
+        self._observer.schedule(_Handler(), str(self._config_path.parent), recursive=False)
+        self._observer.start()
+
+    def stop_watching(self) -> None:
+        if self._observer is None:
+            return
+        self._observer.stop()
+        self._observer.join(timeout=2.0)
+        self._observer = None
+
+    def _reload(self) -> None:
+        try:
+            new_cfg = load_config(self._config_path)
+        except Exception:
+            log.exception("config reload rejected; keeping previous config")
+            return
+        with self._lock:
+            cur_profile = self._current_profile
+            cur_page = self._current_page
+            if cur_profile in new_cfg.profiles:
+                profile = new_cfg.profiles[cur_profile]
+                if cur_page not in profile.pages:
+                    cur_page = profile.default_page
+            else:
+                cur_profile = new_cfg.default_profile
+                cur_page = new_cfg.profiles[new_cfg.default_profile].default_page
+            self._config = new_cfg
+            self._current_profile = cur_profile
+            self._current_page = cur_page
+        self.render_current_page()
+        log.info("config reloaded; active=%s/%s", self._current_profile, self._current_page)
 
     @property
     def current_profile(self) -> str | None:

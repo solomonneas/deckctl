@@ -95,3 +95,74 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
     with patch("subprocess.run") as run:
         device.inject_press(1)
     assert run.call_count == 1
+
+
+def test_daemon_hot_reload_picks_up_new_config(tmp_path: Path):
+    cfg_path = tmp_path / "live.yaml"
+    cfg_path.write_text(
+        "version: 1\n"
+        "default_profile: a\n"
+        "profiles:\n"
+        "  a:\n"
+        "    default_page: home\n"
+        "    pages:\n"
+        "      home:\n"
+        "        keys:\n"
+        "          0:\n"
+        "            icon: {text: A}\n"
+        "            action: {type: shell, cmd: \"true\"}\n"
+    )
+    device = MockDevice()
+    d = Daemon(device=device, config_path=cfg_path)
+    d.load()
+    d.render_current_page()
+    d.start_watching()
+
+    cfg_path.write_text(
+        "version: 1\n"
+        "default_profile: b\n"
+        "profiles:\n"
+        "  b:\n"
+        "    default_page: home\n"
+        "    pages:\n"
+        "      home:\n"
+        "        keys:\n"
+        "          0:\n"
+        "            icon: {text: B}\n"
+        "            action: {type: shell, cmd: \"true\"}\n"
+    )
+
+    import time
+    for _ in range(50):  # up to 5 seconds
+        time.sleep(0.1)
+        if d.current_profile == "b":
+            break
+    d.stop_watching()
+    assert d.current_profile == "b"
+
+
+def test_daemon_hot_reload_rejects_invalid_config_and_keeps_old(tmp_path: Path):
+    cfg_path = tmp_path / "live.yaml"
+    cfg_path.write_text(
+        "version: 1\n"
+        "default_profile: a\n"
+        "profiles:\n"
+        "  a:\n"
+        "    default_page: home\n"
+        "    pages:\n"
+        "      home:\n"
+        "        keys: {}\n"
+    )
+    device = MockDevice()
+    d = Daemon(device=device, config_path=cfg_path)
+    d.load()
+    d.render_current_page()
+    d.start_watching()
+
+    cfg_path.write_text("version: 99\n")  # invalid
+
+    import time
+    time.sleep(0.8)
+    d.stop_watching()
+
+    assert d.current_profile == "a"
