@@ -79,6 +79,6 @@ def test_obs_input_mute_toggle_shells_to_obs_cmd():
     with patch("sdac.actions.obs.subprocess.run") as run:
         get_handler("obs.input.mute.toggle").execute(action, _FakeCtx())
     run.assert_called_once_with(
-        ["obs-cmd", "-w", "obsws://127.0.0.1:4455/roc-pass", "audio", "toggle-mute", "Mic"],
+        ["obs-cmd", "-w", "obsws://127.0.0.1:4455/roc-pass", "audio", "toggle", "Mic"],
         check=True,
     )

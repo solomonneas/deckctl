@@ -71,4 +71,4 @@ class ObsInputMuteToggleHandler:
     action_type: ClassVar[str] = "obs.input.mute.toggle"
 
     def execute(self, action: ObsInputMuteToggleAction, ctx: DaemonContext) -> None:
-        _obs_cmd(ctx.obs_host_url(action.host), "audio", "toggle-mute", action.input_name)
+        _obs_cmd(ctx.obs_host_url(action.host), "audio", "toggle", action.input_name)
