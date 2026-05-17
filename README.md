@@ -34,11 +34,11 @@ pipx install --editable .
 Phase 2+ actions shell out to a few system utilities. On Ubuntu / Debian:
 
 ```bash
-sudo apt install -y xdotool playerctl
+sudo apt install -y libhidapi-libusb0 xdotool playerctl
 # pactl ships with pulseaudio-utils on PulseAudio or pipewire-pulse on PipeWire
 ```
 
-`xdotool` is required for `key.chord` and `key.text` actions. `pactl` is required for `system.volume.*`. `playerctl` is required for `media.*`. The daemon does not require any of them at startup, only at the moment an action that uses them is dispatched.
+`libhidapi-libusb0` is the USB HID library the `streamdeck` Python package binds to; the daemon will fail to enumerate any device without it. `xdotool` is required for `key.chord` and `key.text` actions, `pactl` for `system.volume.*`, `playerctl` for `media.*` — those three are only invoked at action dispatch time, so the daemon starts without them, but pressing an action that needs one will fail with `FileNotFoundError`.
 
 ## Quick start
 
