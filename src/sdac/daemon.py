@@ -19,8 +19,9 @@ from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
 from sdac.actions import get_handler
-from sdac.config import Config, load_config
+from sdac.config import Config, Indicator, load_config
 from sdac.device import Device, KeyEvent
+from sdac.obs.client import OBSEvent
 from sdac.render import KEY_SIZE, render_key
 
 log = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ class Daemon:
         self._current_page: str | None = None
         self._lock = threading.RLock()
         self._observer: BaseObserver | None = None
+        self._indicator_state: dict[tuple[str, str, str | None], bool] = {}
         self._device.register_key_callback(self._on_key)
 
     # ----- DaemonContext protocol -----
@@ -70,8 +72,89 @@ class Daemon:
         self.render_current_page()
 
     def obs_host_url(self, name: str) -> str:
-        """Phase 3 Task 4 wires this to self._config.obs_hosts."""
-        raise NotImplementedError("obs_host_url is wired in Phase 3 Task 4")
+        with self._lock:
+            assert self._config is not None
+            if name not in self._config.obs_hosts:
+                raise KeyError(f"unknown obs host: {name}")
+            return self._config.obs_hosts[name].url
+
+    def _indicator_active(self, ind: Indicator) -> bool:
+        """Look up the current cached state for an indicator binding."""
+        if ind.bind == "obs.scene.current":
+            qualifier = ind.scene
+        elif ind.bind == "obs.input.muted":
+            qualifier = ind.input_name
+        else:
+            qualifier = None
+        return self._indicator_state.get((ind.bind, ind.host, qualifier), False)
+
+    def _update_indicator(
+        self,
+        bind_kind: str,
+        host: str,
+        qualifier: str | None,
+        active: bool,
+    ) -> list[int]:
+        """Update the state map and return the keys on the current page that need re-rendering."""
+        with self._lock:
+            if bind_kind == "obs.scene.current":
+                # Scene change: zero out all other scenes on this host so the
+                # previously-active key flips off.
+                for k_state in list(self._indicator_state):
+                    bk, h, _q = k_state
+                    if bk == "obs.scene.current" and h == host:
+                        self._indicator_state[k_state] = False
+                self._indicator_state[(bind_kind, host, qualifier)] = active
+            else:
+                key = (bind_kind, host, qualifier)
+                prev = self._indicator_state.get(key)
+                self._indicator_state[key] = active
+                if prev == active:
+                    return []
+            if (
+                self._config is None
+                or self._current_profile is None
+                or self._current_page is None
+            ):
+                return []
+            page = self._config.profiles[self._current_profile].pages[self._current_page]
+            affected: list[int] = []
+            for idx, k in page.keys.items():
+                if k.indicator is None:
+                    continue
+                ind = k.indicator
+                if ind.bind != bind_kind or ind.host != host:
+                    continue
+                if ind.bind == "obs.input.muted" and ind.input_name != qualifier:
+                    continue
+                affected.append(idx)
+            return affected
+
+    def _rerender_keys(self, indices: list[int]) -> None:
+        """Re-render specific keys without touching the rest of the page."""
+        with self._lock:
+            assert self._config is not None
+            assert self._current_profile is not None
+            assert self._current_page is not None
+            page = self._config.profiles[self._current_profile].pages[self._current_page]
+            keys = {i: page.keys.get(i) for i in indices}
+        if not self._device.is_open:
+            return
+        for idx, k in keys.items():
+            if k is None:
+                continue
+            active = bool(k.indicator and self._indicator_active(k.indicator))
+            try:
+                img = render_key(k, state="active" if active else "idle")
+                self._device.set_key_image(idx, img)
+            except Exception:
+                log.exception("indicator re-render failed on key %d", idx)
+
+    def on_obs_event(self, event: OBSEvent) -> None:
+        """Callback invoked by OBSClient when an event arrives on its worker thread."""
+        affected = self._update_indicator(event.kind, event.host, event.qualifier, event.active)
+        if affected:
+            self._rerender_keys(affected)
 
     # ----- Lifecycle -----
 
@@ -155,7 +238,12 @@ class Daemon:
             self._device.open()
         blank = Image.new("RGB", (KEY_SIZE, KEY_SIZE), "#000000")
         for idx in range(self._device.key_count):
-            img = render_key(keys[idx], state="idle") if idx in keys else blank
+            if idx in keys:
+                k = keys[idx]
+                active = bool(k.indicator and self._indicator_active(k.indicator))
+                img = render_key(k, state="active" if active else "idle")
+            else:
+                img = blank
             try:
                 self._device.set_key_image(idx, img)
             except Exception:
