@@ -6,15 +6,37 @@ Single place YAML is parsed and validated. Discriminated union over the
 
 from __future__ import annotations
 
+import os
+import re
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
-from sdac.errors import ConfigError
+from sdac.errors import ConfigError, EnvVarMissingError
 
 MK2_KEY_COUNT = 15  # 5x3 grid
+
+
+_ENV_VAR_RE = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)\}")
+
+
+def _substitute_env(raw: Any) -> Any:
+    """Recursively substitute `${VAR}` in every string in the parsed YAML tree."""
+    if isinstance(raw, str):
+        def repl(m: re.Match[str]) -> str:
+            name = m.group(1)
+            val = os.environ.get(name)
+            if val is None:
+                raise EnvVarMissingError(f"env var '{name}' referenced in config is not set")
+            return val
+        return _ENV_VAR_RE.sub(repl, raw)
+    if isinstance(raw, dict):
+        return {k: _substitute_env(v) for k, v in raw.items()}
+    if isinstance(raw, list):
+        return [_substitute_env(v) for v in raw]
+    return raw
 
 
 # ---------- Icons ----------
@@ -311,6 +333,10 @@ def load_config(path: str | Path) -> Config:
         raise ConfigError(f"YAML parse error in {p}: {e}") from e
     if not isinstance(raw, dict):
         raise ConfigError(f"{p}: top-level YAML must be a mapping")
+    try:
+        raw = _substitute_env(raw)
+    except EnvVarMissingError as e:
+        raise ConfigError(f"{p}: {e}") from e
     try:
         return Config.model_validate(raw)
     except ValidationError as e:

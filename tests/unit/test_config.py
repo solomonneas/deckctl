@@ -72,3 +72,27 @@ def test_icon_state_variant_colors_optional():
     assert rec_key.indicator is not None
     assert rec_key.indicator.bind == "obs.recording.state"
     assert rec_key.indicator.host == "roc"
+
+
+def test_env_var_substitution(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "secret-from-env")
+    cfg = load_config(FIXTURES / "env_var.yaml")
+    assert cfg.obs_hosts["roc"].url == "obsws://127.0.0.1:4455/secret-from-env"
+
+
+def test_env_var_missing_raises(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("SDAC_TEST_OBS_PASS", raising=False)
+    with pytest.raises(ConfigError, match="SDAC_TEST_OBS_PASS"):
+        load_config(FIXTURES / "env_var.yaml")
+
+
+def test_env_var_substitution_in_action(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("SDAC_TEST_CMD", "echo hello")
+    p = tmp_path / "c.yaml"
+    p.write_text(
+        "version: 1\ndefault_profile: x\nprofiles:\n  x:\n    default_page: p\n    "
+        "pages:\n      p:\n        keys:\n          0:\n            icon: {text: hi}\n"
+        "            action: {type: shell, cmd: \"${SDAC_TEST_CMD}\"}\n"
+    )
+    cfg = load_config(p)
+    assert cfg.profiles["x"].pages["p"].keys[0].action.cmd == "echo hello"
