@@ -27,6 +27,17 @@ cd streamdeck-as-code
 pipx install --editable .
 ```
 
+### Linux runtime dependencies
+
+Phase 2+ actions shell out to a few system utilities. On Ubuntu / Debian:
+
+```bash
+sudo apt install -y xdotool playerctl
+# pactl ships with pulseaudio-utils on PulseAudio or pipewire-pulse on PipeWire
+```
+
+`xdotool` is required for `key.chord` and `key.text` actions. `pactl` is required for `system.volume.*`. `playerctl` is required for `media.*`. The daemon does not require any of them at startup, only at the moment an action that uses them is dispatched.
+
 ## Quick start
 
 ```bash
