@@ -29,3 +29,8 @@ def get_handler(action_type: str) -> ActionHandler:
         return HANDLERS[action_type]
     except KeyError as e:
         raise KeyError(f"no handler registered for action type {action_type!r}") from e
+
+
+# Eager imports — every concrete handler module's `@register` runs at import.
+# Order is irrelevant but keep alphabetical for tidiness.
+from sdac.actions import shell  # noqa: E402, F401
