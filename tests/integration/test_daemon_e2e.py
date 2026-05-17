@@ -1,15 +1,24 @@
 """End-to-end daemon test — exercises every handler category against MockDevice
 in one run, with hot reload thrown in for good measure.
+
+This test asserts Linux-specific platform call shapes (xdotool/pactl). Skipped
+on Windows; Phase 4b will add a parallel Windows-shape integration test.
 """
 
 from __future__ import annotations
 
+import sys
 import time
 from pathlib import Path
 from unittest.mock import patch
 
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
+import pytest
+
+if sys.platform.startswith("win"):
+    pytest.skip("Linux-shape integration test", allow_module_level=True)
+
+from sdac.daemon import Daemon  # noqa: E402
+from sdac.device import MockDevice  # noqa: E402
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "configs" / "daemon_smoke.yaml"
 
