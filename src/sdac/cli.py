@@ -145,3 +145,19 @@ def install_service(config_path: str, sdac_path: str | None) -> None:
         click.echo(str(e), err=True)
         sys.exit(6)
     click.echo(f"installed: systemd unit + udev rule; service active with --config {abs_config}")
+
+
+@main.command("uninstall-service")
+@click.option("--keep-udev", is_flag=True, help="Leave the udev rule in place; only remove the systemd unit.")
+def uninstall_service(keep_udev: bool) -> None:
+    """Stop + disable + remove the systemd unit (and udev rule unless --keep-udev)."""
+    import logging
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+    from sdac.service import ServiceError
+    from sdac.service import uninstall_service as _uninstall
+    try:
+        _uninstall(remove_udev=not keep_udev)
+    except ServiceError as e:
+        click.echo(str(e), err=True)
+        sys.exit(6)
+    click.echo("uninstalled" + ("" if not keep_udev else " (udev rule kept)"))

@@ -123,3 +123,21 @@ def test_install_service_errors_when_config_missing(tmp_path: Path):
     runner = CliRunner()
     result = runner.invoke(main, ["install-service", "--config", str(tmp_path / "nope.yaml")])
     assert result.exit_code != 0
+
+
+def test_uninstall_service_invokes_uninstall():
+    from unittest.mock import patch
+    runner = CliRunner()
+    with patch("sdac.service.uninstall_service") as un:
+        result = runner.invoke(main, ["uninstall-service"])
+    assert result.exit_code == 0, result.output
+    un.assert_called_once_with(remove_udev=True)
+
+
+def test_uninstall_service_keep_udev_flag():
+    from unittest.mock import patch
+    runner = CliRunner()
+    with patch("sdac.service.uninstall_service") as un:
+        result = runner.invoke(main, ["uninstall-service", "--keep-udev"])
+    assert result.exit_code == 0, result.output
+    un.assert_called_once_with(remove_udev=False)
