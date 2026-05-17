@@ -90,11 +90,15 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
         "boom" in rec.message or "boom" in str(rec.exc_info) for rec in caplog.records
     )
     # Daemon still wired up — a follow-on press still dispatches. Key 1 is
-    # key.chord which routes through sdac.platform._linux.subprocess.run, and
-    # patching the canonical subprocess.run name intercepts it.
-    with patch("subprocess.run") as run:
-        device.inject_press(1)
-    assert run.call_count == 1
+    # key.chord which on Linux routes through sdac.platform._linux.subprocess.run
+    # (patching canonical subprocess.run intercepts it). On Windows it routes
+    # through keybd_event so the same mock doesn't apply — skip the second-press
+    # check there.
+    import sys
+    if not sys.platform.startswith("win"):
+        with patch("subprocess.run") as run:
+            device.inject_press(1)
+        assert run.call_count == 1
 
 
 def test_daemon_hot_reload_picks_up_new_config(tmp_path: Path):
