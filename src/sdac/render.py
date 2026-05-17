@@ -14,6 +14,7 @@ from importlib.resources import files
 from typing import Literal
 
 from PIL import Image, ImageDraw, ImageFont
+from pilmoji import Pilmoji  # type: ignore[import-untyped]
 
 from sdac.config import IconSpec, KeyConfig
 from sdac.errors import RenderError
@@ -54,10 +55,47 @@ def render_key(key: KeyConfig, *, state: State = "idle") -> Image.Image:
     bg = _bg_color(key.icon, state)
     fg = key.icon.fg or DEFAULT_FG
     img = Image.new("RGB", (KEY_SIZE, KEY_SIZE), bg)
-    draw = ImageDraw.Draw(img)
-    if key.icon.text:
-        _draw_text(draw, key.icon.text, fg)
+    if key.icon.emoji and key.icon.text:
+        _draw_emoji_and_text(img, key.icon.emoji, key.icon.text, fg)
+    elif key.icon.emoji:
+        _draw_emoji_only(img, key.icon.emoji)
+    elif key.icon.text:
+        _draw_text(ImageDraw.Draw(img), key.icon.text, fg)
     return img
+
+
+def _draw_emoji_only(img: Image.Image, emoji: str) -> None:
+    """Emoji centered at 40px."""
+    size = 40
+    font = _load_font(size)
+    with Pilmoji(img) as p:
+        bbox = p.getsize(emoji, font=font)
+        x = (KEY_SIZE - bbox[0]) // 2
+        y = (KEY_SIZE - bbox[1]) // 2
+        p.text((x, y), emoji, font=font)
+
+
+def _draw_emoji_and_text(img: Image.Image, emoji: str, text: str, fg: str) -> None:
+    """Layout: emoji on top half (~28px), text on bottom half (auto-sized)."""
+    emoji_font = _load_font(28)
+    with Pilmoji(img) as p:
+        bbox = p.getsize(emoji, font=emoji_font)
+        x = (KEY_SIZE - bbox[0]) // 2
+        y = 6
+        p.text((x, y), emoji, font=emoji_font)
+    draw = ImageDraw.Draw(img)
+    for size in range(14, 8, -1):
+        font = _load_font(size)
+        bbox2 = draw.textbbox((0, 0), text, font=font)
+        w = bbox2[2] - bbox2[0]
+        h = bbox2[3] - bbox2[1]
+        if w <= KEY_SIZE - 4 and h <= 22:
+            x = int((KEY_SIZE - w) // 2 - bbox2[0])
+            y = int(KEY_SIZE - h - 6 - bbox2[1])
+            draw.text((x, y), text, fill=fg, font=font)
+            return
+    font = _load_font(9)
+    draw.text((4, KEY_SIZE - 14), text[:7], fill=fg, font=font)
 
 
 def _draw_text(draw: ImageDraw.ImageDraw, text: str, fg: str) -> None:

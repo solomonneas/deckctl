@@ -43,3 +43,9 @@ def test_text_only_blue_bg():
     assert img.size == (KEY_SIZE, KEY_SIZE)
     assert img.mode == "RGB"
     _assert_matches_golden(img, "text_only_blue.png")
+
+
+def test_text_with_emoji():
+    k = _key(IconSpec(text="Tests", emoji="🧪", bg="#1e88e5"))
+    img = render_key(k, state="idle")
+    _assert_matches_golden(img, "text_emoji_blue.png")
