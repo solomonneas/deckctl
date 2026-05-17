@@ -2,9 +2,9 @@
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 3 (current). `sdac daemon` runs against a real Stream Deck MK.2; all 21 action types execute including OBS scene/recording/streaming/replay/virtualcam/input-mute controls over the LAN; indicator-bound keys reflect live OBS state. `sdac install-service` registers a systemd user unit + udev rule. `sdac doctor` reports device + deps + config + service + OBS reachability. Windows port lands in Phase 4.
+**Status:** Phase 4 (current). `sdac daemon` runs on Linux end-to-end including auto-profile-switching driven by the focused window (X11). Windows daemon code is in place (keys + media + active-window watcher) but the Task Scheduler install verb + Windows volume control are queued for Phase 4b. OBS execution + live indicators work as of Phase 3.
 
-## Capabilities (Phase 1 + 2a + 2b + 3)
+## Capabilities (Phase 1 + 2a + 2b + 3 + 4)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
 - Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
@@ -14,6 +14,7 @@ Cross-platform declarative driver for the Elgato Stream Deck. One YAML config pr
 - Hot-reload the config without restarting the daemon.
 - Execute OBS actions over the LAN: scene switch, recording/streaming/replay/virtualcam toggle, audio mute.
 - Live state indicators: keys bound to OBS recording/streaming/replay/scene/mute auto-update when OBS state changes.
+- **Auto profile switching:** define `profile_rules:` matching `app_class` (Linux) or `app_name` (Windows); the daemon switches profiles when the focused window matches.
 - Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
 - `sdac doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
 
@@ -155,6 +156,30 @@ Indicators support:
 - `obs.recording.state`, `obs.streaming.state`, `obs.replay.state`, `obs.virtualcam.state` — boolean output states
 - `obs.scene.current` — match a `scene:` name; key is active when that scene is the current program scene
 - `obs.input.muted` — match an `input_name:`; key is active when that audio input is muted
+
+## Auto profile switching (Phase 4)
+
+Add `profile_rules:` to your config to switch profiles automatically when the focused application changes:
+
+```yaml
+profile_rules:
+  - profile: streaming
+    when:
+      app_class: [obs]            # Linux WM_CLASS (lowercased)
+      app_name:  [obs64.exe]      # Windows process basename (lowercased)
+  - profile: coding
+    when:
+      app_class: [code, jetbrains-idea-ce, ghostty]
+      app_name:  [code.exe, idea64.exe, windowsterminal.exe]
+  - profile: browsing
+    when:
+      app_class: [chromium, firefox]
+      app_name:  [chrome.exe, firefox.exe]
+
+default_profile: coding
+```
+
+Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_ACTIVE_WINDOW` + `WM_CLASS`; Windows uses `GetForegroundWindow` + the process basename. Both poll every 250ms — fast enough to feel instant. Wayland is not supported in Phase 4 (the daemon falls back to "no auto-switch" if it can't open an X display).
 
 ## Action grammar (v1)
 

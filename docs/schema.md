@@ -20,6 +20,8 @@ profiles:
   <profile-name>: <Profile>
 ```
 
+**Phase 4 runtime note:** the daemon evaluates `profile_rules` top-to-bottom on every focused-window change. Linux X11 reads `WM_CLASS` (lowercased); Windows reads the process basename (lowercased). First match wins; no match keeps the current profile. Wayland is unsupported.
+
 ## Profile
 
 ```yaml
