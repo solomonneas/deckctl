@@ -33,3 +33,42 @@ def test_default_profile_must_exist(tmp_path: Path):
     )
     with pytest.raises(ConfigError, match="default_profile"):
         load_config(bad)
+
+
+def test_comprehensive_config_parses_all_action_types():
+    cfg = load_config(FIXTURES / "comprehensive.yaml")
+    home = cfg.profiles["coding"].pages["home"].keys
+    assert home[0].action.type == "shell"
+    assert home[0].action.cmd == "{{vars.pnpm}} test"
+    assert home[1].action.type == "key.chord"
+    assert home[1].action.keys == "ctrl+shift+b"
+    assert home[2].action.type == "key.text"
+    assert home[2].action.text == "console.log()"
+    assert home[3].action.type == "open.url"
+    assert home[4].action.type == "open.app"
+    assert home[5].action.type == "page.go"
+    assert home[5].action.page == "git"
+    assert home[6].action.type == "profile.switch"
+    assert home[7].action.type == "compound"
+    assert len(home[7].action.actions) == 2
+
+
+def test_key_index_must_be_in_range(tmp_path: Path):
+    bad = tmp_path / "bad.yaml"
+    bad.write_text(
+        "version: 1\ndefault_profile: x\nprofiles:\n  x:\n    default_page: p\n    "
+        "pages:\n      p:\n        keys:\n          99:\n            icon: {text: hi}\n"
+        "            action: {type: shell, cmd: ls}\n"
+    )
+    with pytest.raises(ConfigError, match="key index"):
+        load_config(bad)
+
+
+def test_icon_state_variant_colors_optional():
+    cfg = load_config(FIXTURES / "comprehensive.yaml")
+    rec_key = cfg.profiles["streaming"].pages["home"].keys[1]
+    assert rec_key.icon.bg_idle == "#424242"
+    assert rec_key.icon.bg_active == "#d32f2f"
+    assert rec_key.indicator is not None
+    assert rec_key.indicator.bind == "obs.recording.state"
+    assert rec_key.indicator.host == "roc"

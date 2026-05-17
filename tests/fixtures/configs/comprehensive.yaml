@@ -1,0 +1,67 @@
+version: 1
+default_profile: coding
+vars:
+  pnpm: /usr/bin/pnpm
+profiles:
+  coding:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon: {text: "Tests", emoji: "🧪", bg: "#1e88e5"}
+            action: {type: shell, cmd: "{{vars.pnpm}} test"}
+          1:
+            icon: {text: "Build", emoji: "🔨", bg: "#43a047"}
+            action: {type: key.chord, keys: "ctrl+shift+b"}
+          2:
+            icon: {text: "Snippet"}
+            action: {type: key.text, text: "console.log()"}
+          3:
+            icon: {text: "Docs", emoji: "📚", bg: "#6d4c41"}
+            action: {type: open.url, url: "https://example.com"}
+          4:
+            icon: {text: "App"}
+            action: {type: open.app, path: "/usr/bin/code"}
+          5:
+            icon: {text: "Git"}
+            action: {type: page.go, page: git}
+          6:
+            icon: {text: "Stream"}
+            action: {type: profile.switch, profile: streaming}
+          7:
+            icon: {text: "Combo"}
+            action:
+              type: compound
+              actions:
+                - {type: shell, cmd: "echo hi"}
+                - {type: key.text, text: "done"}
+      git:
+        keys:
+          0:
+            icon: {text: "Back"}
+            action: {type: page.go, page: home}
+  streaming:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon: {text: "Cam", bg: "#1e88e5"}
+            action: {type: obs.scene.switch, host: roc, scene: "Camera"}
+          1:
+            icon:
+              text: "REC"
+              bg_idle: "#424242"
+              bg_active: "#d32f2f"
+            indicator: {bind: obs.recording.state, host: roc}
+            action: {type: obs.recording.toggle, host: roc}
+          2:
+            icon: {text: "Volume"}
+            action: {type: system.volume.up, step: 5}
+          3:
+            icon: {text: "Mute"}
+            action: {type: system.volume.mute}
+          4:
+            icon: {text: "Next"}
+            action: {type: media.next}
