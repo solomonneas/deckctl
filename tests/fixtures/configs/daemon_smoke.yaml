@@ -1,0 +1,32 @@
+version: 1
+default_profile: main
+profiles:
+  main:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon: {text: "Shell"}
+            action: {type: shell, cmd: "true"}
+          1:
+            icon: {text: "Chord"}
+            action: {type: key.chord, keys: "ctrl+t"}
+          2:
+            icon: {text: "Vol+"}
+            action: {type: system.volume.up, step: 2}
+          3:
+            icon: {text: "Compound"}
+            action:
+              type: compound
+              actions:
+                - {type: shell, cmd: "true"}
+                - {type: shell, cmd: "true"}
+          4:
+            icon: {text: "Nav"}
+            action: {type: page.go, page: other}
+      other:
+        keys:
+          0:
+            icon: {text: "Back"}
+            action: {type: page.go, page: home}
