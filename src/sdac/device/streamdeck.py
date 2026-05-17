@@ -39,6 +39,14 @@ class StreamDeckDevice:
             )
         return cls(decks[0])
 
+    @classmethod
+    def enumerate_first_or_none(cls) -> StreamDeckDevice | None:
+        """Like enumerate_first but returns None instead of raising."""
+        decks = DeviceManager().enumerate()
+        if not decks:
+            return None
+        return cls(decks[0])
+
     @property
     def is_open(self) -> bool:
         return self._open

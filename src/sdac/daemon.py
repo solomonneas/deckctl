@@ -9,6 +9,7 @@ loops for OBS websocket subscriptions.
 from __future__ import annotations
 
 import logging
+import signal
 import threading
 from pathlib import Path
 
@@ -177,3 +178,23 @@ class Daemon:
             handler.execute(key_cfg.action, self)
         except Exception:
             log.exception("action %r on key %d raised", key_cfg.action.type, event.key)
+
+    def run_forever(self) -> None:
+        """Block until SIGINT / SIGTERM. Used by the `sdac daemon` CLI verb."""
+        stop = threading.Event()
+
+        def handle(signum: int, frame: object) -> None:
+            del frame
+            log.info("received signal %d; stopping", signum)
+            stop.set()
+
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, handle)
+
+        try:
+            while not stop.is_set():
+                stop.wait(timeout=1.0)
+        finally:
+            self.stop_watching()
+            if self._device.is_open:
+                self._device.close()
