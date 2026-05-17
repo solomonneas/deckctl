@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+[project]
+name = "streamdeck-as-code"
+version = "0.1.0"
+description = "Cross-platform declarative Stream Deck driver: YAML config, hot reload, OBS integration."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Solomon", email = "srneas@gmail.com" }]
+requires-python = ">=3.11"
+keywords = ["streamdeck", "elgato", "obs", "automation", "macros"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Multimedia",
+]
+dependencies = [
+    "click>=8.1",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "pillow>=10.2",
+    "pilmoji>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "types-PyYAML",
+]
+
+[project.scripts]
+sdac = "sdac.cli:main"
+
+[project.urls]
+Repository = "https://github.com/solomonneas/streamdeck-as-code"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sdac"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"src/sdac/assets" = "sdac/assets"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+files = ["src/sdac"]
