@@ -2,14 +2,16 @@
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 1 (current). `sdac validate` + `sdac preview` work without a USB device. Daemon, OBS integration, and Windows-specific watchers land in Phases 2-4.
+**Status:** Phase 2a (current). `sdac daemon` runs against a real Stream Deck MK.2 (Linux only). All non-OBS action types execute: shell, key.chord, key.text, open.url/app, system.volume.*, media.*, page.go, profile.switch, compound. Hot reload on config edit. Service install (systemd unit) lands in Phase 2b; OBS execution lands in Phase 3; Windows port lands in Phase 4.
 
-## Phase 1 capabilities
+## Capabilities (Phase 1 + 2a)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
 - Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
-- Render every key in a profile/page as a single mosaic PNG. No USB device required.
+- Render every key in a profile/page as a single mosaic PNG (offline preview, no device required).
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
+- Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
+- Hot-reload the config without restarting the daemon.
 
 ## Install
 
@@ -66,6 +68,24 @@ Wrote preview.png (392x232)
 ```
 
 See [`docs/schema.md`](docs/schema.md) for the full YAML reference.
+
+## Daemon (Phase 2a, Linux)
+
+Run the daemon against a plugged-in Stream Deck MK.2:
+
+```bash
+sdac daemon --config ~/.config/sdac/config.yaml -v
+```
+
+Or against an in-memory mock device (no hardware required — useful for testing your config):
+
+```bash
+sdac daemon --config ~/.config/sdac/config.yaml --mock -v
+```
+
+The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `sdac install-service` command that registers a systemd user unit so it autostarts at login.
+
+Edit the config file while the daemon is running — it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
 
 ## Action grammar (v1)
 

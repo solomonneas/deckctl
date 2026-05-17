@@ -62,6 +62,8 @@ At least one of `text`, `emoji`, `image` must be set.
 
 ## Actions
 
+**Phase 2a runtime note:** the `obs.*` action types validate in the schema but their handlers currently raise `NotImplementedError` at dispatch. Real OBS execution arrives in Phase 3. All other action types execute normally.
+
 | `type` | Required fields | Optional |
 |---|---|---|
 | `shell` | `cmd` | `cwd`, `shell` |
