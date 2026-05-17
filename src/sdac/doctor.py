@@ -153,6 +153,40 @@ def check_udev_rule() -> CheckResult:
     )
 
 
+def check_obs_reachability(config_path: str | None) -> CheckResult:
+    """For each configured obs_hosts entry, attempt a quick connect via ReqClient."""
+    if config_path is None:
+        return CheckResult("obs_hosts", Severity.WARN, "skipped - no --config provided")
+    try:
+        cfg = load_config(config_path)
+    except ConfigError as e:
+        return CheckResult("obs_hosts", Severity.WARN, f"config error blocked OBS check: {e}")
+    if not cfg.obs_hosts:
+        return CheckResult("obs_hosts", Severity.PASS, "no obs_hosts configured")
+    import obsws_python  # type: ignore[import-untyped]
+
+    from sdac.obs.url import parse_obsws_url
+    reachable: list[str] = []
+    unreachable: list[str] = []
+    for name, host in cfg.obs_hosts.items():
+        try:
+            parsed = parse_obsws_url(host.url)
+            req = obsws_python.ReqClient(
+                host=parsed.host, port=parsed.port, password=parsed.password, timeout=2,
+            )
+            req.disconnect()
+            reachable.append(name)
+        except Exception:
+            unreachable.append(name)
+    if unreachable:
+        return CheckResult(
+            "obs_hosts",
+            Severity.WARN,
+            f"reachable: {', '.join(reachable) or 'none'}; unreachable: {', '.join(unreachable)}",
+        )
+    return CheckResult("obs_hosts", Severity.PASS, f"reachable: {', '.join(reachable)}")
+
+
 def run_all_checks(*, config_path: str | None) -> list[CheckResult]:
     return [
         check_libhidapi(),
@@ -162,6 +196,7 @@ def run_all_checks(*, config_path: str | None) -> list[CheckResult]:
         check_udev_rule(),
         check_service_status(),
         check_config(config_path),
+        check_obs_reachability(config_path),
     ]
 
 

@@ -133,3 +133,37 @@ def test_run_all_checks_returns_list_of_results():
     assert isinstance(results, list)
     assert all(isinstance(r, CheckResult) for r in results)
     assert len(results) >= 5
+
+
+def test_check_obs_reachability_warn_without_config():
+    from sdac.doctor import check_obs_reachability
+    r = check_obs_reachability(None)
+    assert r.severity is Severity.WARN
+
+
+def test_check_obs_reachability_no_hosts_in_config_passes(tmp_path):
+    from sdac.doctor import check_obs_reachability
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(
+        "version: 1\ndefault_profile: a\nprofiles:\n  a:\n    default_page: home\n"
+        "    pages:\n      home:\n        keys: {}\n"
+    )
+    r = check_obs_reachability(str(cfg))
+    assert r.severity is Severity.PASS
+    assert "no obs_hosts" in r.message.lower()
+
+
+def test_check_obs_reachability_warn_on_unreachable(tmp_path, monkeypatch):
+    from sdac.doctor import check_obs_reachability
+    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "x")
+    cfg = tmp_path / "c.yaml"
+    cfg.write_text(
+        "version: 1\ndefault_profile: a\n"
+        "obs_hosts:\n"
+        "  ghost:\n    url: obsws://127.0.0.1:6666/${SDAC_TEST_OBS_PASS}\n"
+        "profiles:\n  a:\n    default_page: home\n"
+        "    pages:\n      home:\n        keys: {}\n"
+    )
+    r = check_obs_reachability(str(cfg))
+    assert r.severity is Severity.WARN
+    assert "ghost" in r.message
