@@ -33,4 +33,4 @@ def get_handler(action_type: str) -> ActionHandler:
 
 # Eager imports — every concrete handler module's `@register` runs at import.
 # Order is irrelevant but keep alphabetical for tidiness.
-from sdac.actions import keys, shell  # noqa: E402, F401
+from sdac.actions import keys, opening, shell  # noqa: E402, F401
