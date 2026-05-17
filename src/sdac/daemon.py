@@ -21,7 +21,7 @@ from watchdog.observers.api import BaseObserver
 from sdac.actions import get_handler
 from sdac.config import Config, Indicator, load_config
 from sdac.device import Device, KeyEvent
-from sdac.obs.client import OBSEvent
+from sdac.obs.client import OBSClient, OBSConnectError, OBSEvent
 from sdac.render import KEY_SIZE, render_key
 
 log = logging.getLogger(__name__)
@@ -45,6 +45,7 @@ class Daemon:
         self._lock = threading.RLock()
         self._observer: BaseObserver | None = None
         self._indicator_state: dict[tuple[str, str, str | None], bool] = {}
+        self._obs_clients: list[OBSClient] = []
         self._device.register_key_callback(self._on_key)
 
     # ----- DaemonContext protocol -----
@@ -155,6 +156,26 @@ class Daemon:
         affected = self._update_indicator(event.kind, event.host, event.qualifier, event.active)
         if affected:
             self._rerender_keys(affected)
+
+    def start_obs_clients(self) -> None:
+        """Open a websocket connection to each configured obs_host. Best-effort."""
+        with self._lock:
+            assert self._config is not None
+            hosts = list(self._config.obs_hosts.items())
+        for name, host in hosts:
+            client = OBSClient(host=name, url=host.url, on_event=self.on_obs_event)
+            try:
+                client.start()
+            except OBSConnectError as e:
+                log.warning("OBS host %s unreachable: %s", name, e)
+                continue
+            self._obs_clients.append(client)
+            log.info("OBS host %s subscribed for events", name)
+
+    def stop_obs_clients(self) -> None:
+        for c in self._obs_clients:
+            c.stop()
+        self._obs_clients.clear()
 
     # ----- Lifecycle -----
 
@@ -283,10 +304,12 @@ class Daemon:
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, handle)
 
+        self.start_obs_clients()
         try:
             while not stop.is_set():
                 stop.wait(timeout=1.0)
         finally:
+            self.stop_obs_clients()
             self.stop_watching()
             if self._device.is_open:
                 self._device.close()

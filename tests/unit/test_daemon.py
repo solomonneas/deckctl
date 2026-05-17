@@ -166,3 +166,38 @@ def test_daemon_hot_reload_rejects_invalid_config_and_keeps_old(tmp_path: Path):
     d.stop_watching()
 
     assert d.current_profile == "a"
+
+
+def test_daemon_start_obs_clients_skips_unreachable(monkeypatch: pytest.MonkeyPatch):
+    """A host that won't connect just gets logged; daemon continues."""
+    from unittest.mock import MagicMock, patch
+
+    from sdac.obs.client import OBSConnectError
+
+    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "abc")
+    device = MockDevice()
+    d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
+    d.load()
+
+    with patch("sdac.daemon.OBSClient") as oc:
+        instance = MagicMock()
+        instance.start.side_effect = OBSConnectError("nope")
+        oc.return_value = instance
+        d.start_obs_clients()
+    assert d._obs_clients == []
+
+
+def test_daemon_start_obs_clients_keeps_successful_ones(monkeypatch: pytest.MonkeyPatch):
+    from unittest.mock import MagicMock, patch
+    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "abc")
+    device = MockDevice()
+    d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
+    d.load()
+    with patch("sdac.daemon.OBSClient") as oc:
+        instance = MagicMock()
+        instance.start.return_value = None
+        oc.return_value = instance
+        d.start_obs_clients()
+    assert len(d._obs_clients) == 1
+    d.stop_obs_clients()
+    instance.stop.assert_called_once()
