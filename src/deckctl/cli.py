@@ -219,7 +219,7 @@ def init(name: str | None, list_only: bool, dest: str | None, force: bool) -> No
         sys.exit(2)
     target.parent.mkdir(parents=True, exist_ok=True)
     yaml_text = get_preset(name)
-    target.write_text(yaml_text)
+    target.write_text(yaml_text, encoding="utf-8")
     with contextlib.suppress(OSError):
         target.chmod(0o600)  # Windows + tmpfs ignore chmod; not fatal
     click.echo(f"Wrote {target}")

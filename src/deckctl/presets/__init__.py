@@ -35,4 +35,4 @@ def get_preset(name: str) -> str:
     """
     if name not in DESCRIPTIONS:
         raise KeyError(f"unknown preset {name!r} (available: {sorted(DESCRIPTIONS)})")
-    return files("deckctl.presets").joinpath(f"{name}.yaml").read_text()
+    return files("deckctl.presets").joinpath(f"{name}.yaml").read_text(encoding="utf-8")

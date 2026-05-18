@@ -354,7 +354,7 @@ def load_config(path: str | Path, *, strict_perms: bool = False) -> Config:
     p = Path(path)
     _check_perms(p, strict=strict_perms)
     try:
-        raw: Any = yaml.safe_load(p.read_text())
+        raw: Any = yaml.safe_load(p.read_text(encoding="utf-8"))
     except yaml.YAMLError as e:
         raise ConfigError(f"YAML parse error in {p}: {e}") from e
     if not isinstance(raw, dict):

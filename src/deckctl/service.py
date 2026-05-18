@@ -45,20 +45,23 @@ def user_unit_path() -> Path:
 
 def render_systemd_unit(*, deckctl_path: str, config_path: str) -> str:
     """Substitute the systemd unit template with absolute paths."""
-    tpl = files("deckctl.assets.systemd").joinpath("deckctl.service.template").read_text()
+    tpl = files("deckctl.assets.systemd").joinpath("deckctl.service.template").read_text(encoding="utf-8")
     return tpl.format(deckctl_path=deckctl_path, config_path=config_path)
 
 
 def udev_rule_text() -> str:
     """The packaged udev rule, verbatim."""
-    return files("deckctl.assets.udev").joinpath(UDEV_RULE_NAME).read_text()
+    return files("deckctl.assets.udev").joinpath(UDEV_RULE_NAME).read_text(encoding="utf-8")
 
 
 def write_user_unit(deckctl_path: str, config_path: str) -> Path:
     """Write the substituted unit to ~/.config/systemd/user/deckctl.service."""
     dest = user_unit_path()
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(render_systemd_unit(deckctl_path=deckctl_path, config_path=config_path))
+    dest.write_text(
+        render_systemd_unit(deckctl_path=deckctl_path, config_path=config_path),
+        encoding="utf-8",
+    )
     log.info("wrote %s", dest)
     return dest
 
@@ -70,7 +73,7 @@ def install_udev_rule_with_sudo() -> None:
     """
     text = udev_rule_text()
     stage = Path("/tmp/deckctl-60-streamdeck.rules")
-    stage.write_text(text)
+    stage.write_text(text, encoding="utf-8")
     try:
         subprocess.run(["sudo", "cp", str(stage), str(UDEV_RULE_PATH)], check=True)
         subprocess.run(["sudo", "udevadm", "control", "--reload-rules"], check=True)
