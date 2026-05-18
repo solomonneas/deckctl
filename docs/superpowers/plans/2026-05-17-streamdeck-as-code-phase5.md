@@ -120,17 +120,17 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 
 ### Added
 
-**Phase 1 — Foundation**
+**Phase 1 - Foundation**
 - Pydantic v2 schema for the YAML config (discriminated union over 21 action types).
 - `${ENV_VAR}` substitution across the entire parsed YAML tree.
 - POSIX file permission check (`--strict-perms`).
 - `sdac validate <config>` CLI verb.
 - Pillow + Pilmoji icon renderer (text, emoji, image-background, state variants).
-- `sdac preview <config>` CLI verb — renders the full profile as a mosaic PNG.
+- `sdac preview <config>` CLI verb - renders the full profile as a mosaic PNG.
 - Bundled rsms/inter v4.0 Inter-Bold.ttf for deterministic icon rendering.
 - GitHub Actions CI on Ubuntu + Windows, Python 3.11 + 3.12.
 
-**Phase 2a — Daemon + actions**
+**Phase 2a - Daemon + actions**
 - USB HID I/O via `python-elgato-streamdeck` for Stream Deck MK.2.
 - Cross-platform `Device` protocol with `MockDevice` for tests.
 - Synchronous threaded daemon, hot-reload via `watchdog`.
@@ -139,18 +139,18 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 - `sdac daemon --config <path> [--mock]` CLI verb.
 - Device hotplug resilience + SIGINT/SIGTERM clean shutdown.
 
-**Phase 2b — Service install + doctor**
+**Phase 2b - Service install + doctor**
 - `sdac install-service` writes a systemd user unit + udev rule via sudo.
 - `sdac uninstall-service` reverses; `--keep-udev` opt.
 - `sdac doctor` reports device, libhidapi, python_deps, system_binaries, udev, service, config, and OBS reachability (added in Phase 3).
 
-**Phase 3 — OBS integration**
+**Phase 3 - OBS integration**
 - All 6 OBS action handlers execute via `obs-cmd` shell-out.
 - `OBSClient` per host via `obsws-python` EventClient.
 - Live state indicators: recording / streaming / replay / virtualcam / scene / input-mute keys re-render on OBS events.
 - Daemon best-effort connects to each `obs_hosts` entry on startup; unreachable hosts log + skip.
 
-**Phase 4 — Auto profile switching**
+**Phase 4 - Auto profile switching**
 - Linux X11 active-window watcher via `python-xlib` polling `_NET_ACTIVE_WINDOW`.
 - Windows watcher via pywin32 + psutil (untested on Linux dev; ready for runtime verification on Windows).
 - Daemon evaluates `profile_rules:` top-to-bottom on every window change; first match wins.
@@ -173,10 +173,10 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 
 ### Required runtime deps (Linux)
 
-- `libhidapi-libusb0` — daemon fails to enumerate without it.
-- `xdotool` — `key.chord` / `key.text`.
-- `pactl` (pulseaudio-utils or pipewire-pulse) — `system.volume.*`.
-- `playerctl` — `media.*`.
+- `libhidapi-libusb0` - daemon fails to enumerate without it.
+- `xdotool` - `key.chord` / `key.text`.
+- `pactl` (pulseaudio-utils or pipewire-pulse) - `system.volume.*`.
+- `playerctl` - `media.*`.
 ```
 
 - [ ] **Step 2: Commit**
@@ -227,8 +227,8 @@ git commit -m "chore: gitignore Claude artifacts (.claude/, memory-handoffs/)"
 ## Task 4: content-guard pre-push hook
 
 **Files:**
-- Create: `.git/hooks/pre-push` (NOT tracked — installed at workdir, scoped to this clone)
-- Create: `scripts/install-content-guard.sh` (tracked — lets others install the same hook)
+- Create: `.git/hooks/pre-push` (NOT tracked - installed at workdir, scoped to this clone)
+- Create: `scripts/install-content-guard.sh` (tracked - lets others install the same hook)
 
 - [ ] **Step 1: Write `scripts/install-content-guard.sh`**
 
@@ -279,7 +279,7 @@ while read local_ref local_sha remote_ref remote_sha; do
 
   for pat in "${patterns[@]}"; do
     if git rev-list "$range" -- 2>/dev/null | xargs -r -I{} git show {} 2>/dev/null | grep -E "$pat" > /dev/null; then
-      echo "content-guard: push BLOCKED — $pat appears in commits being pushed"
+      echo "content-guard: push BLOCKED - $pat appears in commits being pushed"
       echo "  fix: rewrite history with git filter-repo, or revert the offending commit"
       exit 1
     fi
@@ -311,7 +311,7 @@ echo "refs/heads/main $(git rev-parse HEAD) refs/heads/main 00000000000000000000
 echo "exit: $?"
 ```
 
-Expected: exit 0 (no blocked patterns found). If the hook blocks, STOP and report — there's a leak in our history we need to address before publication.
+Expected: exit 0 (no blocked patterns found). If the hook blocks, STOP and report - there's a leak in our history we need to address before publication.
 
 - [ ] **Step 4: Commit the install script**
 
@@ -324,7 +324,7 @@ git commit -m "chore: content-guard pre-push hook installer"
 
 ## Task 5: GitHub repo create + push
 
-**Files:** (none — `gh` operations)
+**Files:** (none - `gh` operations)
 
 This task creates the public repo and pushes `main`. Single sudo-equivalent action; do it deliberately.
 
@@ -356,7 +356,7 @@ gh repo create solomonneas/streamdeck-as-code \
     --push
 ```
 
-Expected: success message + repo URL printed. If the repo already exists, `gh` will error — in that case run `gh repo view solomonneas/streamdeck-as-code` to confirm, then `git remote add origin git@github.com:solomonneas/streamdeck-as-code.git && git push -u origin main`.
+Expected: success message + repo URL printed. If the repo already exists, `gh` will error - in that case run `gh repo view solomonneas/streamdeck-as-code` to confirm, then `git remote add origin git@github.com:solomonneas/streamdeck-as-code.git && git push -u origin main`.
 
 - [ ] **Step 4: Verify the push landed**
 
@@ -373,22 +373,22 @@ sleep 5
 gh run list --repo solomonneas/streamdeck-as-code --limit 3
 ```
 
-Expected: a `ci` workflow either `queued` / `in_progress` / `completed`. If CI shows `failure`, capture the URL and surface it in the status report — it's recoverable, not a blocker for the release.
+Expected: a `ci` workflow either `queued` / `in_progress` / `completed`. If CI shows `failure`, capture the URL and surface it in the status report - it's recoverable, not a blocker for the release.
 
 ---
 
 ## Task 6: GitHub release v0.1.0
 
-**Files:** (none — `gh` operation)
+**Files:** (none - `gh` operation)
 
 - [ ] **Step 1: Tag and release**
 
 ```bash
 cd ~/repos/streamdeck-as-code
-git tag -a v0.1.0 -m "v0.1.0 — initial public release (Phases 1-4)"
+git tag -a v0.1.0 -m "v0.1.0 - initial public release (Phases 1-4)"
 git push origin v0.1.0
 gh release create v0.1.0 \
-    --title "v0.1.0 — Initial public release" \
+    --title "v0.1.0 - Initial public release" \
     --notes-from-tag \
     --notes "$(awk '/## \[0\.1\.0\]/,/^## \[/' CHANGELOG.md | head -n -1)"
 ```

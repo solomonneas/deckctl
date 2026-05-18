@@ -1,4 +1,4 @@
-# deckctl coding preset — dev workflow with 5 pages.
+# deckctl coding preset - dev workflow with 5 pages.
 #
 # Pages: home → git → snippets → terminal → scripts (use page.go to navigate;
 # each sub-page's key 14 is "Back" to home).
@@ -59,8 +59,8 @@ profiles:
             icon: {text: "Local", emoji: "🌐", bg: "#1976d2"}
             action: {type: open.url, url: "http://localhost:3000"}
           9:
-            icon: {text: "Slack", emoji: "💬", bg: "#4a154b"}
-            action: {type: open.url, url: "https://slack.com"}
+            icon: {text: "Term", emoji: "🪟", bg: "#37474f"}
+            action: {type: page.go, page: terminal}
           10:
             icon: {text: "Scripts", emoji: "📂", bg: "#455a64"}
             action: {type: page.go, page: scripts}
@@ -279,7 +279,7 @@ profiles:
             icon: {text: "Back", emoji: "⬅️", bg: "#424242"}
             action: {type: page.go, page: home}
 
-      # coding.scripts — quick launchers for personal scripts.
+      # coding.scripts - quick launchers for personal scripts.
       # Placeholder keys point at ~/scripts/*.sh paths. Either create those
       # scripts, or edit each key's action.cmd to point at where your scripts
       # actually live. Tip: keep ~/scripts/ on PATH so you can invoke by

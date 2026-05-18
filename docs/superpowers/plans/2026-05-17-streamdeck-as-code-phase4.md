@@ -17,7 +17,7 @@
 - `ActiveWindow` dataclass with `app_class` (Linux WM_CLASS, lowercase second token) and `app_name` (Windows process basename).
 - Daemon evaluates `profile_rules` on every window change, switches profile on first match.
 - Mock `Watcher` for tests.
-- Windows platform shim: real implementations for `send_chord`, `type_text`, `media_play/pause/next/prev`; `volume_*` remains `NotImplementedError` with a clear message ("pycaw not yet integrated — Phase 4b").
+- Windows platform shim: real implementations for `send_chord`, `type_text`, `media_play/pause/next/prev`; `volume_*` remains `NotImplementedError` with a clear message ("pycaw not yet integrated - Phase 4b").
 
 **Deferred (Phase 4b):**
 - `sdac install-service` on Windows (Task Scheduler at logon).
@@ -149,7 +149,7 @@ class Watcher(Protocol):
 
 The factory `make_watcher()` returns the right implementation for this OS.
 On Linux it requires X11 (Wayland is out of scope for Phase 4).
-On other OSes it returns a NullWatcher that never fires — daemon still runs,
+On other OSes it returns a NullWatcher that never fires - daemon still runs,
 no profile auto-switching happens.
 """
 
@@ -196,7 +196,7 @@ __all__ = ["ActiveWindow", "NullWatcher", "Watcher", "WatcherCallback", "make_wa
 python -c "from sdac.watchers import make_watcher, ActiveWindow, Watcher, NullWatcher; print('ok')"
 ```
 
-Expected: `ok`. (The factory will raise / return NullWatcher because `_linux.py` doesn't exist yet — that's expected via the try/except.)
+Expected: `ok`. (The factory will raise / return NullWatcher because `_linux.py` doesn't exist yet - that's expected via the try/except.)
 
 - [ ] **Step 6: Full check**
 
@@ -221,7 +221,7 @@ git commit -m "feat(watchers): facade + protocol + ActiveWindow value type"
 - Create: `src/sdac/watchers/mock.py`
 - Create: `tests/unit/test_watcher_mock.py`
 
-- [ ] **Step 1: Write the failing test — `tests/unit/test_watcher_mock.py`**
+- [ ] **Step 1: Write the failing test - `tests/unit/test_watcher_mock.py`**
 
 ```python
 from __future__ import annotations
@@ -324,7 +324,7 @@ git commit -m "feat(watchers): MockWatcher for tests"
 - Create: `src/sdac/watchers/_linux.py`
 - Create: `tests/unit/test_watcher_linux.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_watcher_linux.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_watcher_linux.py`**
 
 ```python
 from __future__ import annotations
@@ -384,7 +384,7 @@ Expected: ImportError on `sdac.watchers._linux`.
 """Linux X11 active-window watcher.
 
 Polls `_NET_ACTIVE_WINDOW` every 250ms via python-xlib. Fires the callback
-when the focused window changes. Wayland is out of scope — the daemon will
+when the focused window changes. Wayland is out of scope - the daemon will
 fall back to NullWatcher if the X server can't be opened.
 """
 
@@ -508,7 +508,7 @@ git commit -m "feat(watchers): Linux X11 active-window watcher (_NET_ACTIVE_WIND
 **Files:**
 - Create: `src/sdac/watchers/_windows.py`
 
-(No new unit tests — pywin32 isn't installed on the Linux dev box. Tests for this module will require running on Windows. The implementation is structured so it's correct-by-inspection; runtime verification happens when Solomon plugs the Deck into the Windows host and runs `sdac daemon --config ...`.)
+(No new unit tests - pywin32 isn't installed on the Linux dev box. Tests for this module will require running on Windows. The implementation is structured so it's correct-by-inspection; runtime verification happens when Solomon plugs the Deck into the Windows host and runs `sdac daemon --config ...`.)
 
 - [ ] **Step 1: Write `src/sdac/watchers/_windows.py`**
 
@@ -516,7 +516,7 @@ git commit -m "feat(watchers): Linux X11 active-window watcher (_NET_ACTIVE_WIND
 """Windows active-window watcher.
 
 Polls GetForegroundWindow + GetWindowThreadProcessId every 250ms via pywin32.
-Untested on Linux dev — verified on real Windows by running `sdac daemon`.
+Untested on Linux dev - verified on real Windows by running `sdac daemon`.
 """
 
 from __future__ import annotations
@@ -610,7 +610,7 @@ And to the base dependencies list:
 python -c "import sdac.watchers._windows; print('ok')"
 ```
 
-Expected: `ok`. (The actual `_run()` body has `import win32gui` inside it which would fail at runtime — but that runtime path is never invoked on Linux.)
+Expected: `ok`. (The actual `_run()` body has `import win32gui` inside it which would fail at runtime - but that runtime path is never invoked on Linux.)
 
 - [ ] **Step 4: Full check**
 
@@ -669,7 +669,7 @@ profiles:
         keys: {}
 ```
 
-- [ ] **Step 2: Write failing tests — `tests/unit/test_daemon_autoswitch.py`**
+- [ ] **Step 2: Write failing tests - `tests/unit/test_daemon_autoswitch.py`**
 
 ```python
 from __future__ import annotations
@@ -762,7 +762,7 @@ def test_first_matching_rule_wins():
     d.render_current_page()
     d.start_watching_windows()
     # An ActiveWindow that matches both "streaming" (app_class=obs) and would also match if
-    # we contrived a rule lower down — verify by checking only streaming gets selected.
+    # we contrived a rule lower down - verify by checking only streaming gets selected.
     watcher.inject(ActiveWindow(app_class="obs", app_name="firefox.exe"))
     assert d.current_profile == "streaming"
 ```
@@ -905,12 +905,12 @@ git commit -m "feat(daemon): profile_rules auto-switch via active-window watcher
 
 ---
 
-## Task 6: Windows platform shim — keys + media (volume stays NotImplementedError)
+## Task 6: Windows platform shim - keys + media (volume stays NotImplementedError)
 
 **Files:**
 - Modify: `src/sdac/platform/_windows.py`
 
-(No new tests — pywin32 not on Linux dev. The code is correct-by-inspection.)
+(No new tests - pywin32 not on Linux dev. The code is correct-by-inspection.)
 
 - [ ] **Step 1: Replace the body of `src/sdac/platform/_windows.py`**
 
@@ -918,7 +918,7 @@ git commit -m "feat(daemon): profile_rules auto-switch via active-window watcher
 """Windows implementations of platform-dependent action primitives.
 
 `send_chord`, `type_text`, and the four `media_*` functions are implemented
-via pywin32's keybd_event. `volume_*` remains NotImplementedError — Phase 4b
+via pywin32's keybd_event. `volume_*` remains NotImplementedError - Phase 4b
 will wire pycaw or shell to nircmd.
 
 Untested on the Linux dev machine; correctness will be verified when the
@@ -1056,7 +1056,7 @@ def open_app(path: str) -> None:
 python -c "import sdac.platform._windows; print('ok')"
 ```
 
-Expected: `ok`. (Function calls would fail at runtime because pywin32 isn't installed on Linux — but the import path doesn't invoke them.)
+Expected: `ok`. (Function calls would fail at runtime because pywin32 isn't installed on Linux - but the import path doesn't invoke them.)
 
 - [ ] **Step 3: Full check**
 
@@ -1097,7 +1097,7 @@ Replace with:
 ## Capabilities (Phase 1 + 2a + 2b + 3 + 4)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
-- Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
+- Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
 - Render every key in a profile/page as a single mosaic PNG (offline preview, no device required).
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
@@ -1106,7 +1106,7 @@ Replace with:
 - Live state indicators: keys bound to OBS recording/streaming/replay/scene/mute auto-update when OBS state changes.
 - **Auto profile switching:** define `profile_rules:` matching `app_class` (Linux) or `app_name` (Windows); the daemon switches profiles when the focused window matches.
 - Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
-- `sdac doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
+- `sdac doctor` reports on device, deps, service status, config, and OBS reachability - exits non-zero on any FAIL.
 ```
 
 - [ ] **Step 3: Add a new auto-switch section to `README.md`**
@@ -1136,7 +1136,7 @@ profile_rules:
 default_profile: coding
 ```
 
-Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_ACTIVE_WINDOW` + `WM_CLASS`; Windows uses `GetForegroundWindow` + the process basename. Both poll every 250ms — fast enough to feel instant. Wayland is not supported in Phase 4 (the daemon falls back to "no auto-switch" if it can't open an X display).
+Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_ACTIVE_WINDOW` + `WM_CLASS`; Windows uses `GetForegroundWindow` + the process basename. Both poll every 250ms - fast enough to feel instant. Wayland is not supported in Phase 4 (the daemon falls back to "no auto-switch" if it can't open an X display).
 ```
 
 - [ ] **Step 4: Update `docs/schema.md`**
@@ -1160,7 +1160,7 @@ Expected: clean, 154 tests passing.
 
 ```bash
 git add README.md docs/schema.md
-git commit -m "docs: Phase 4 — auto profile switching section + status update"
+git commit -m "docs: Phase 4 - auto profile switching section + status update"
 ```
 
 ### Step 7: Report Phase 4 commit chain

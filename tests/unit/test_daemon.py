@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-import deckctl.actions  # noqa: F401 — registers handlers
+import deckctl.actions  # noqa: F401 - registers handlers
 from deckctl.daemon import Daemon
 from deckctl.device import MockDevice
 from deckctl.errors import ConfigError
@@ -89,10 +89,10 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
     assert any(
         "boom" in rec.message or "boom" in str(rec.exc_info) for rec in caplog.records
     )
-    # Daemon still wired up — a follow-on press still dispatches. Key 1 is
+    # Daemon still wired up - a follow-on press still dispatches. Key 1 is
     # key.chord which on Linux routes through deckctl.platform._linux.subprocess.run
     # (patching canonical subprocess.run intercepts it). On Windows it routes
-    # through keybd_event so the same mock doesn't apply — skip the second-press
+    # through keybd_event so the same mock doesn't apply - skip the second-press
     # check there.
     import sys
     if not sys.platform.startswith("win"):

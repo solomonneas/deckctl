@@ -36,7 +36,8 @@ def test_bundled_preset_validates_against_schema(name: str, tmp_path: Path, monk
 
     raw = get_preset(name)
     p = tmp_path / f"{name}.yaml"
-    p.write_text(raw)
+    # Explicit encoding so this passes on Windows local runs without PYTHONUTF8=1.
+    p.write_text(raw, encoding="utf-8")
 
     cfg = load_config(p)
     assert cfg.version == 1

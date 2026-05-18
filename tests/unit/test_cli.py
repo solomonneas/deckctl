@@ -229,3 +229,38 @@ def test_init_no_args_shows_usage_with_preset_list():
     result = runner.invoke(main, ["init"])
     assert result.exit_code != 0
     assert "coding" in result.output or "default" in result.output
+
+
+def test_init_default_path_honors_xdg_config_home(tmp_path: Path, monkeypatch):
+    """XDG_CONFIG_HOME wins over ~/.config/. Matches sdac.service convention."""
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default"])
+    assert result.exit_code == 0, result.output
+    expected = tmp_path / "xdg" / "deckctl" / "config.yaml"
+    assert expected.exists()
+    assert "version: 1" in expected.read_text(encoding="utf-8")
+
+
+def test_init_default_path_falls_back_to_home_dot_config(tmp_path: Path, monkeypatch):
+    """When XDG_CONFIG_HOME is unset, write to ~/.config/deckctl/config.yaml."""
+    monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default"])
+    assert result.exit_code == 0, result.output
+    expected = tmp_path / "home" / ".config" / "deckctl" / "config.yaml"
+    assert expected.exists()
+
+
+def test_init_atomic_create_no_force_uses_exclusive_open(tmp_path: Path):
+    """Even if the destination appears after the (now-removed) exists()-check,
+    `open("x")` raises FileExistsError so the user's file is not clobbered.
+    """
+    out = tmp_path / "config.yaml"
+    out.write_text("# my hand-written config\n", encoding="utf-8")
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default", "--to", str(out)])
+    assert result.exit_code == 2
+    assert out.read_text(encoding="utf-8") == "# my hand-written config\n"

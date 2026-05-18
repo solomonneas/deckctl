@@ -14,7 +14,7 @@
 
 **In Phase 3:**
 - 6 OBS action handlers shell out to `obs-cmd` (replacing the `NotImplementedError` stubs).
-- `OBSClient` class — wraps one obsws-python `EventClient` per host, subscribes to 6 events.
+- `OBSClient` class - wraps one obsws-python `EventClient` per host, subscribes to 6 events.
 - `Daemon` owns an indicator state map; on OBS event → update map → re-render bound keys on current page.
 - `Indicator` resolution: scene-current keys flip when the scene_name in the event matches `indicator.scene`; input-mute keys flip per `indicator.input_name`.
 - `sdac doctor` adds a per-host OBS reachability check (`Severity.WARN` if unreachable, `Severity.PASS` if connected).
@@ -95,7 +95,7 @@ Expected: `obsws_python ok`.
 """OBS WebSocket subscription + URL parsing.
 
 The action execution path (handlers in `sdac.actions.obs`) shells out to the
-`obs-cmd` binary on PATH — this package is just for event subscription and
+`obs-cmd` binary on PATH - this package is just for event subscription and
 URL parsing.
 """
 
@@ -105,7 +105,7 @@ from sdac.obs.url import ParsedObsws, parse_obsws_url
 __all__ = ["OBSClient", "OBSConnectError", "OBSEvent", "ParsedObsws", "parse_obsws_url"]
 ```
 
-- [ ] **Step 4: Write failing test — `tests/unit/test_obs_url.py`**
+- [ ] **Step 4: Write failing test - `tests/unit/test_obs_url.py`**
 
 ```python
 from __future__ import annotations
@@ -156,7 +156,7 @@ Expected: ImportError on `sdac.obs.url`.
 ```python
 """Parse `obsws://host:port/password` URLs.
 
-This is the single source of truth for OBS URL parsing — both the event
+This is the single source of truth for OBS URL parsing - both the event
 client and the action handlers use it.
 """
 
@@ -189,7 +189,7 @@ def parse_obsws_url(url: str) -> ParsedObsws:
     return ParsedObsws(host=parsed.hostname, port=port, password=password)
 ```
 
-(Note: we will create `client.py` in Task 2; the `__init__.py` imports from it will fail until then. That's fine — we run only the URL test in this task.)
+(Note: we will create `client.py` in Task 2; the `__init__.py` imports from it will fail until then. That's fine - we run only the URL test in this task.)
 
 - [ ] **Step 7: Run only the URL test**
 
@@ -197,7 +197,7 @@ def parse_obsws_url(url: str) -> ParsedObsws:
 pytest tests/unit/test_obs_url.py -v
 ```
 
-Expected: 5 passing. (The `__init__.py` imports `OBSClient` etc., which don't exist yet — but the test imports directly from `sdac.obs.url`, bypassing the package's `__init__`. If the test fails with an `ImportError` from `__init__.py`, comment out the `from sdac.obs.client import ...` line in `__init__.py` temporarily and re-enable it in Task 2.)
+Expected: 5 passing. (The `__init__.py` imports `OBSClient` etc., which don't exist yet - but the test imports directly from `sdac.obs.url`, bypassing the package's `__init__`. If the test fails with an `ImportError` from `__init__.py`, comment out the `from sdac.obs.client import ...` line in `__init__.py` temporarily and re-enable it in Task 2.)
 
 - [ ] **Step 8: Make `__init__.py` import-safe before client.py exists**
 
@@ -207,7 +207,7 @@ Temporarily replace `src/sdac/obs/__init__.py` with:
 """OBS WebSocket subscription + URL parsing.
 
 The action execution path (handlers in `sdac.actions.obs`) shells out to the
-`obs-cmd` binary on PATH — this package is just for event subscription and
+`obs-cmd` binary on PATH - this package is just for event subscription and
 URL parsing.
 """
 
@@ -242,7 +242,7 @@ git commit -m "feat(obs): add obsws-python dep + URL parser"
 - Modify: `src/sdac/obs/__init__.py` (restore full exports)
 - Create: `tests/unit/test_obs_client.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_obs_client.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_obs_client.py`**
 
 ```python
 from __future__ import annotations
@@ -545,7 +545,7 @@ Expected: clean, 124 tests passing.
 
 ```bash
 git add src/sdac/obs/client.py src/sdac/obs/__init__.py tests/unit/test_obs_client.py
-git commit -m "feat(obs): OBSClient — per-host websocket event subscription"
+git commit -m "feat(obs): OBSClient - per-host websocket event subscription"
 ```
 
 ---
@@ -555,7 +555,7 @@ git commit -m "feat(obs): OBSClient — per-host websocket event subscription"
 **Files:**
 - Modify: `src/sdac/actions/base.py`
 - Modify: `src/sdac/actions/obs.py` (replace stubs with real shell-outs)
-- Modify: `tests/unit/test_action_compound.py` and `tests/unit/test_action_navigation.py` and any test that defines a `_NullCtx` / `_RecordingCtx` — they need the new method
+- Modify: `tests/unit/test_action_compound.py` and `tests/unit/test_action_navigation.py` and any test that defines a `_NullCtx` / `_RecordingCtx` - they need the new method
 - Create: `tests/unit/test_action_obs.py`
 
 - [ ] **Step 1: Extend `DaemonContext` Protocol in `src/sdac/actions/base.py`**
@@ -584,13 +584,13 @@ For each of the following test files, find the existing test-only context class 
 ```
 
 Files to patch (search for the class definitions):
-- `tests/unit/test_action_shell.py` — `_NullCtx`
-- `tests/unit/test_action_keys.py` — `_NullCtx`
-- `tests/unit/test_action_opening.py` — `_NullCtx`
-- `tests/unit/test_action_system_audio.py` — `_NullCtx`
-- `tests/unit/test_action_compound.py` — `_NullCtx`
-- `tests/unit/test_action_navigation.py` — `_RecordingCtx`
-- `tests/unit/test_actions_registry.py` — `_FakeCtx`
+- `tests/unit/test_action_shell.py` - `_NullCtx`
+- `tests/unit/test_action_keys.py` - `_NullCtx`
+- `tests/unit/test_action_opening.py` - `_NullCtx`
+- `tests/unit/test_action_system_audio.py` - `_NullCtx`
+- `tests/unit/test_action_compound.py` - `_NullCtx`
+- `tests/unit/test_action_navigation.py` - `_RecordingCtx`
+- `tests/unit/test_actions_registry.py` - `_FakeCtx`
 
 (The `_RecordingCtx` in `test_action_navigation.py` keeps its existing `pages`/`profiles` recording; just add the obs method.)
 
@@ -606,14 +606,14 @@ pytest tests/unit/test_action_shell.py tests/unit/test_action_keys.py \
 
 Expected: all passing.
 
-- [ ] **Step 4: Write failing tests — `tests/unit/test_action_obs.py`**
+- [ ] **Step 4: Write failing tests - `tests/unit/test_action_obs.py`**
 
 ```python
 from __future__ import annotations
 
 from unittest.mock import patch
 
-import sdac.actions  # noqa: F401 — registers handlers
+import sdac.actions  # noqa: F401 - registers handlers
 from sdac.actions import get_handler
 from sdac.config import (
     ObsInputMuteToggleAction,
@@ -800,7 +800,7 @@ git commit -m "feat(actions): real OBS handlers shell out to obs-cmd; ctx.obs_ho
 
 ---
 
-## Task 4: Daemon integration — obs_host_url + indicator state map
+## Task 4: Daemon integration - obs_host_url + indicator state map
 
 **Files:**
 - Modify: `src/sdac/daemon.py`
@@ -873,9 +873,9 @@ Then add these methods to `Daemon` (anywhere after `obs_host_url`):
             return affected
 ```
 
-Note on `obs.scene.current` handling: each scene gets its own state map entry, keyed by scene_name. When a SceneChanged event arrives with `scene_name="Camera"`, we set `("obs.scene.current", host, "Camera")` to True. We DO NOT automatically zero out the previously-active scene's entry — but we also re-render every scene-bound key on the page. That works because `_indicator_active` checks the bound scene's specific entry, which is True only for the currently-active scene.
+Note on `obs.scene.current` handling: each scene gets its own state map entry, keyed by scene_name. When a SceneChanged event arrives with `scene_name="Camera"`, we set `("obs.scene.current", host, "Camera")` to True. We DO NOT automatically zero out the previously-active scene's entry - but we also re-render every scene-bound key on the page. That works because `_indicator_active` checks the bound scene's specific entry, which is True only for the currently-active scene.
 
-Actually that won't work — we never set the previously-active scene to False. So if we switch from "Camera" to "Lobby", the "Camera" binding stays True. Fix: when a scene-current event arrives, sweep all keys on the page with `obs.scene.current` bindings on this host and zero them out before setting the new one.
+Actually that won't work - we never set the previously-active scene to False. So if we switch from "Camera" to "Lobby", the "Camera" binding stays True. Fix: when a scene-current event arrives, sweep all keys on the page with `obs.scene.current` bindings on this host and zero them out before setting the new one.
 
 Adjust the implementation: `obs.scene.current` handling must clear the state map for ALL `(obs.scene.current, host, *)` keys before setting the new one.
 
@@ -991,7 +991,7 @@ Import `OBSEvent` at the top:
 from sdac.obs.client import OBSEvent
 ```
 
-- [ ] **Step 6: Write failing tests — `tests/unit/test_daemon_indicators.py`**
+- [ ] **Step 6: Write failing tests - `tests/unit/test_daemon_indicators.py`**
 
 ```python
 from __future__ import annotations
@@ -1182,7 +1182,7 @@ Update `run_forever` to call these. In the existing `run_forever`, replace the `
                 self._device.close()
 ```
 
-- [ ] **Step 2: Write failing tests — append to `tests/unit/test_daemon.py`**
+- [ ] **Step 2: Write failing tests - append to `tests/unit/test_daemon.py`**
 
 ```python
 def test_daemon_start_obs_clients_skips_unreachable(monkeypatch: pytest.MonkeyPatch):
@@ -1313,7 +1313,7 @@ def run_all_checks(*, config_path: str | None) -> list[CheckResult]:
     ]
 ```
 
-- [ ] **Step 2: Write failing tests — append to `tests/unit/test_doctor.py`**
+- [ ] **Step 2: Write failing tests - append to `tests/unit/test_doctor.py`**
 
 ```python
 def test_check_obs_reachability_warn_without_config():
@@ -1366,7 +1366,7 @@ Expected: ImportError on `check_obs_reachability`.
 pytest tests/unit/test_doctor.py -k obs_reachability -v
 ```
 
-Expected: 3 passing. The third test may actually pass for a different reason (config validation fails because env var lookup or similar) — that's fine as long as severity is WARN.
+Expected: 3 passing. The third test may actually pass for a different reason (config validation fails because env var lookup or similar) - that's fine as long as severity is WARN.
 
 - [ ] **Step 5: Full check**
 
@@ -1407,7 +1407,7 @@ Replace with:
 ## Capabilities (Phase 1 + 2a + 2b + 3)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
-- Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
+- Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
 - Render every key in a profile/page as a single mosaic PNG (offline preview, no device required).
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
@@ -1415,7 +1415,7 @@ Replace with:
 - Execute OBS actions over the LAN: scene switch, recording/streaming/replay/virtualcam toggle, audio mute.
 - Live state indicators: keys bound to OBS recording/streaming/replay/scene/mute auto-update when OBS state changes.
 - Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
-- `sdac doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
+- `sdac doctor` reports on device, deps, service status, config, and OBS reachability - exits non-zero on any FAIL.
 ```
 
 - [ ] **Step 3: Add a new OBS section**
@@ -1452,12 +1452,12 @@ profiles:
             action: {type: obs.recording.toggle, host: roc}
 ```
 
-Actions execute via `obs-cmd` on PATH. The daemon also opens a WebSocket connection to each `obs_hosts` entry on startup to subscribe to state events; the REC key above turns red when OBS is actually recording, and back to gray when it stops. Hosts that aren't reachable at daemon startup are logged and skipped — actions targeting them will simply fail at dispatch time.
+Actions execute via `obs-cmd` on PATH. The daemon also opens a WebSocket connection to each `obs_hosts` entry on startup to subscribe to state events; the REC key above turns red when OBS is actually recording, and back to gray when it stops. Hosts that aren't reachable at daemon startup are logged and skipped - actions targeting them will simply fail at dispatch time.
 
 Indicators support:
-- `obs.recording.state`, `obs.streaming.state`, `obs.replay.state`, `obs.virtualcam.state` — boolean output states
-- `obs.scene.current` — match a `scene:` name; key is active when that scene is the current program scene
-- `obs.input.muted` — match an `input_name:`; key is active when that audio input is muted
+- `obs.recording.state`, `obs.streaming.state`, `obs.replay.state`, `obs.virtualcam.state` - boolean output states
+- `obs.scene.current` - match a `scene:` name; key is active when that scene is the current program scene
+- `obs.input.muted` - match an `input_name:`; key is active when that audio input is muted
 ```
 
 - [ ] **Step 4: Update `docs/schema.md`**
@@ -1480,7 +1480,7 @@ Expected: clean.
 
 ```bash
 git add README.md docs/schema.md
-git commit -m "docs: Phase 3 — OBS execution + live indicators section"
+git commit -m "docs: Phase 3 - OBS execution + live indicators section"
 ```
 
 ---
@@ -1489,7 +1489,7 @@ git commit -m "docs: Phase 3 — OBS execution + live indicators section"
 
 1. All 21 action types execute. The 6 OBS handlers shell out to `obs-cmd` with the correct argv.
 2. Daemon opens a websocket subscription to each `obs_hosts` entry; unreachable hosts log + continue.
-3. Indicator-bound keys re-render when OBS state changes — verified by the daemon_indicators tests using OBSEvent inputs against MockDevice.
+3. Indicator-bound keys re-render when OBS state changes - verified by the daemon_indicators tests using OBSEvent inputs against MockDevice.
 4. `sdac doctor` reports OBS reachability with a PASS/WARN row.
 5. Tests: 142+ passing. ruff + mypy clean.
 

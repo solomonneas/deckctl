@@ -1,4 +1,4 @@
-# deckctl default preset — minimal 3-key smoke layout.
+# deckctl default preset - minimal 3-key smoke layout.
 # Use after first install to verify everything works, then edit or replace
 # with a richer preset like `deckctl init coding`.
 

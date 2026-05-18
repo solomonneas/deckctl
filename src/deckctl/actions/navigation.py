@@ -1,6 +1,6 @@
 """Navigation actions: page.go and profile.switch.
 
-These don't shell out — they call back into the daemon via DaemonContext.
+These don't shell out - they call back into the daemon via DaemonContext.
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-# deckctl Phase 6 — Preset library + `deckctl init`
+# deckctl Phase 6 - Preset library + `deckctl init`
 
 - **Status:** Draft (awaiting user review)
 - **Date:** 2026-05-18
@@ -7,20 +7,20 @@
 
 ## One-line summary
 
-Ship a bundled library of ready-to-use YAML presets — `coding`, `streaming-twitch`, `streaming-youtube`, `default` — accessible via `deckctl init <preset>`. Turns a blank page into 80% of a working dev or streaming layout in one command. No new actions, no schema changes — pure productized DX.
+Ship a bundled library of ready-to-use YAML presets - `coding`, `streaming-twitch`, `streaming-youtube`, `default` - accessible via `deckctl init <preset>`. Turns a blank page into 80% of a working dev or streaming layout in one command. No new actions, no schema changes - pure productized DX.
 
 ## Why this and not [icon library, macros, TUI]
 
 The 21-action grammar + emoji icons + image support already cover every key a programming or streaming profile needs. The friction is **discovery + boilerplate**: knowing what's worth binding, finding a starting point, and writing 100+ lines of YAML before the first key works.
 
-A preset library closes that gap with one command. Icons + macros + TUI all enhance the experience after presets, not before — see *Future phases* at the bottom.
+A preset library closes that gap with one command. Icons + macros + TUI all enhance the experience after presets, not before - see *Future phases* at the bottom.
 
 ## Goals
 
 1. `deckctl init <preset-name>` writes a complete, validated YAML to `~/.config/deckctl/config.yaml` (or `$XDG_CONFIG_HOME/deckctl/config.yaml`).
-2. Bundled presets ship as package data — no network fetch, no separate install step.
+2. Bundled presets ship as package data - no network fetch, no separate install step.
 3. Presets work as-is on Linux. Streaming presets also work without OBS being reachable (actions just fail at dispatch, not at load).
-4. Presets are full files, not snippets — copying one to your config gives you 15 working keys immediately.
+4. Presets are full files, not snippets - copying one to your config gives you 15 working keys immediately.
 5. Each preset includes a `claude-code` key on the bottom-right corner (key 14) that types Solomon's autonomous-mode trigger phrase + Enter, because that's exactly the use case driving this phase.
 
 ## Non-goals
@@ -28,7 +28,7 @@ A preset library closes that gap with one command. Icons + macros + TUI all enha
 - No interactive editor / TUI. Preset selection is one CLI arg.
 - No preset composition / merging. Pick one, edit by hand from there.
 - No fetching presets from a registry. Bundled only.
-- No icon downloads — every preset uses text + emoji + bg-color icons (which the renderer already handles natively, no external PNGs).
+- No icon downloads - every preset uses text + emoji + bg-color icons (which the renderer already handles natively, no external PNGs).
 - No `writing` / `meeting` / other presets in this phase. Three is enough to validate the approach; more in Phase 6b if useful.
 
 ## Bundled presets
@@ -104,22 +104,22 @@ Each launches a new terminal window with the AI CLI pre-loaded in dangerous/YOLO
 - The bash multiplexer pattern (`bash -lc '...; exec bash'`) is portable across all of them.
 
 **Flag choices (per memory):**
-- Claude Code: `--permission-mode bypassPermissions` (not `--dangerously-skip-permissions` — the latter is hard-blocked by the classifier per `claude-code-bypass-permissions-flag.md`).
+- Claude Code: `--permission-mode bypassPermissions` (not `--dangerously-skip-permissions` - the latter is hard-blocked by the classifier per `claude-code-bypass-permissions-flag.md`).
 - Codex: `--yolo` for interactive bypass mode.
 
-> *Naming note*: throughout this spec, `coding.git` / `coding.scripts` / etc. are readability shorthand for "a page named `git` (or `scripts`) inside the `coding` profile" — `profiles.coding.pages.git` in the YAML. The schema has profiles → pages → keys; there are no sub-profiles.
+> *Naming note*: throughout this spec, `coding.git` / `coding.scripts` / etc. are readability shorthand for "a page named `git` (or `scripts`) inside the `coding` profile" - `profiles.coding.pages.git` in the YAML. The schema has profiles → pages → keys; there are no sub-profiles.
 
-**Sub-page: `coding.git`** — git workflow (status, add all, commit, push, pull, log, diff, branch, page.go back to home, etc.). 15 keys.
+**Sub-page: `coding.git`** - git workflow (status, add all, commit, push, pull, log, diff, branch, page.go back to home, etc.). 15 keys.
 
-**Sub-page: `coding.snippets`** — `key.text` actions for common boilerplate: `console.log()`, `import { } from ''`, `it("", () => {})`, `print()`, a TODO comment, a Slack-style emoji `:rocket:` etc. 15 keys.
+**Sub-page: `coding.snippets`** - `key.text` actions for common boilerplate: `console.log()`, `import { } from ''`, `it("", () => {})`, `print()`, a TODO comment, a Slack-style emoji `:rocket:` etc. 15 keys.
 
-**Sub-page: `coding.terminal`** — tmux/terminal navigation: new window, kill pane, split horizontal, split vertical, prev/next window, etc. Useful only if user uses tmux; harmless otherwise. 15 keys.
+**Sub-page: `coding.terminal`** - tmux/terminal navigation: new window, kill pane, split horizontal, split vertical, prev/next window, etc. Useful only if user uses tmux; harmless otherwise. 15 keys.
 
-**Sub-page: `coding.scripts`** — generic "invoke a personal script or task" launchers. Bound to conventional script locations the user is expected to populate themselves; the preset ships **placeholders** with `# REPLACE THIS PATH` comments so users see exactly where to plug their own scripts in. 15 keys.
+**Sub-page: `coding.scripts`** - generic "invoke a personal script or task" launchers. Bound to conventional script locations the user is expected to populate themselves; the preset ships **placeholders** with `# REPLACE THIS PATH` comments so users see exactly where to plug their own scripts in. 15 keys.
 
 | Key | Icon | Action |
 |---|---|---|
-| 0 | 🚀 Deploy | `shell: ~/scripts/deploy.sh` (placeholder — user edits) |
+| 0 | 🚀 Deploy | `shell: ~/scripts/deploy.sh` (placeholder - user edits) |
 | 1 | 🌱 Seed | `shell: ~/scripts/seed.sh` (placeholder) |
 | 2 | 🧹 Clean | `shell: ~/scripts/clean.sh` (placeholder) |
 | 3 | 🔄 Restart | `shell: ~/scripts/restart.sh` (placeholder) |
@@ -128,21 +128,21 @@ Each launches a new terminal window with the AI CLI pre-loaded in dangerous/YOLO
 | 6 | 🐳 Docker down | `shell: docker compose down` (real) |
 | 7 | 🔁 Reload nginx | `shell: sudo systemctl reload nginx` (placeholder/example) |
 | 8 | 📦 npm install | `shell: pnpm install` (real) |
-| 9 | 🔍 Open scripts/ | `shell: xdg-open ~/scripts` (real — quickly browse the dir) |
+| 9 | 🔍 Open scripts/ | `shell: xdg-open ~/scripts` (real - quickly browse the dir) |
 | 10 | 🌐 ngrok | `shell: ~/scripts/ngrok-up.sh` (placeholder) |
 | 11 | 📁 Open repos/ | `shell: xdg-open ~/repos` (real) |
 | 12 | 📓 Open notes/ | `shell: xdg-open ~/notes` (real) |
 | 13 | ⚙️ Edit config | `shell: ${EDITOR:-vim} ~/.config/deckctl/config.yaml` (real) |
 | 14 | ⬅ Back | `page.go: home` |
 
-The placeholder keys point at conventional paths (`~/scripts/*.sh`). They'll succeed silently if the file exists or fail with a clear `Errno 2: no such file` log line if it doesn't — the daemon stays up either way. Users either:
+The placeholder keys point at conventional paths (`~/scripts/*.sh`). They'll succeed silently if the file exists or fail with a clear `Errno 2: no such file` log line if it doesn't - the daemon stays up either way. Users either:
 - Create the matching scripts at the conventional paths, or
 - Edit the preset YAML to point at their existing script locations.
 
 The preset YAML for this page begins with a top-of-page comment:
 
 ```yaml
-# coding.scripts — quick launchers for personal scripts.
+# coding.scripts - quick launchers for personal scripts.
 # Placeholder keys point at ~/scripts/*.sh paths. Either create those scripts,
 # or edit each key's action.cmd to point at where your scripts actually live.
 # Tip: keep ~/scripts/ on PATH so you can invoke by name from terminals too.
@@ -204,7 +204,7 @@ The exact phrase matches Solomon's `feedback-autonomous-phase-flow` memory entry
 ### `deckctl init [name] [--to PATH] [--force] [--list]`
 
 Behavior:
-- `deckctl init` (no args, no flags): prompt-style selection — list the presets and exit non-zero with a help message asking the user to pick one. No interactive picker (out of scope).
+- `deckctl init` (no args, no flags): prompt-style selection - list the presets and exit non-zero with a help message asking the user to pick one. No interactive picker (out of scope).
 - `deckctl init --list`: print available preset names + one-line descriptions, exit 0.
 - `deckctl init <name>`: write the named preset to `~/.config/deckctl/config.yaml`. Refuses to overwrite an existing file unless `--force`.
 - `deckctl init <name> --to <path>`: write to the given path instead of the default.
@@ -251,7 +251,7 @@ The CLI command:
 
 ## Validation strategy
 
-Each bundled preset is validated against the existing Pydantic schema at TEST time (not at install/runtime — we trust the bundle). Test sketch:
+Each bundled preset is validated against the existing Pydantic schema at TEST time (not at install/runtime - we trust the bundle). Test sketch:
 
 ```python
 @pytest.mark.parametrize("name", ["coding", "streaming-twitch", "streaming-youtube", "default"])
@@ -278,7 +278,7 @@ This catches every schema regression: if we tighten the action union or add a re
 
 - `tests/unit/test_presets.py`: validates `list_presets()` returns the four expected names + descriptions, and each preset loads cleanly through `load_config`.
 - `tests/unit/test_cli.py`: appends `init` command tests covering `--list`, success on write, refuse-without-force, `--force` overwrite, unknown name.
-- No integration tests needed — `init` is a single-file write.
+- No integration tests needed - `init` is a single-file write.
 
 ## Packaging
 
@@ -289,7 +289,7 @@ Add `presets/*.yaml` to the wheel via `[tool.hatch.build.targets.wheel.shared-da
 "src/deckctl/presets" = "deckctl/presets"
 ```
 
-Wait — `shared-data` puts files in `share/deckctl/presets/` on install which is awkward to find. Better: include presets in the package itself (since they live under `src/deckctl/presets/`) via the existing `packages = ["src/deckctl"]` directive. The YAML files get bundled as package data automatically as long as they're in the source tree under `src/deckctl/`. Use `importlib.resources` to load them.
+Wait - `shared-data` puts files in `share/deckctl/presets/` on install which is awkward to find. Better: include presets in the package itself (since they live under `src/deckctl/presets/`) via the existing `packages = ["src/deckctl"]` directive. The YAML files get bundled as package data automatically as long as they're in the source tree under `src/deckctl/`. Use `importlib.resources` to load them.
 
 Verify with `python -c "from importlib.resources import files; print(files('deckctl.presets').joinpath('coding.yaml').read_text()[:80])"` after `pip install -e .`.
 

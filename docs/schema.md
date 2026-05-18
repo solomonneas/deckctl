@@ -69,17 +69,17 @@ At least one of `text`, `emoji`, `image` must be set.
 | `type` | Required fields | Optional |
 |---|---|---|
 | `shell` | `cmd` | `cwd`, `shell` |
-| `key.chord` | `keys` | — |
-| `key.text` | `text` | — |
-| `open.url` | `url` | — |
-| `open.app` | exactly one of `path`/`name` | — |
-| `obs.scene.switch` | `host`, `scene` | — |
-| `obs.recording.toggle`, `obs.streaming.toggle`, `obs.replay.save`, `obs.virtualcam.toggle` | `host` | — |
-| `obs.input.mute.toggle` | `host`, `input_name` | — |
-| `system.volume.up`/`down` | — | `step` (default 5) |
-| `system.volume.mute`, `media.play`, `media.pause`, `media.next`, `media.prev` | — | — |
-| `page.go` | `page` | — |
-| `profile.switch` | `profile` | — |
+| `key.chord` | `keys` | - |
+| `key.text` | `text` | - |
+| `open.url` | `url` | - |
+| `open.app` | exactly one of `path`/`name` | - |
+| `obs.scene.switch` | `host`, `scene` | - |
+| `obs.recording.toggle`, `obs.streaming.toggle`, `obs.replay.save`, `obs.virtualcam.toggle` | `host` | - |
+| `obs.input.mute.toggle` | `host`, `input_name` | - |
+| `system.volume.up`/`down` | - | `step` (default 5) |
+| `system.volume.mute`, `media.play`, `media.pause`, `media.next`, `media.prev` | - | - |
+| `page.go` | `page` | - |
+| `profile.switch` | `profile` | - |
 | `compound` | `actions: [Action]` | `continue_on_error` (bool) |
 
 ## Indicator (live state binding, Phase 3+)

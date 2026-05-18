@@ -4,7 +4,7 @@
 
 **Goal:** Ship a pipx-installable `streamdeck-as-code` package with three working CLI verbs (`sdac --version`, `sdac validate`, `sdac preview`) that round-trip a YAML config through Pydantic schemas and render every key as a 72×72 image, no USB device required. This is the foundation every later phase builds on.
 
-**Architecture:** Python 3.11+ src-layout package. Pydantic v2 schemas with a discriminated union for actions. PyYAML loader with `${ENV_VAR}` substitution. Pillow renderer producing 72×72 RGB JPEGs, color emoji via Pilmoji. Click CLI. pytest + ruff + mypy in CI on Ubuntu and Windows. No daemon, no USB, no OBS execution in this phase — only schema validation and icon rendering.
+**Architecture:** Python 3.11+ src-layout package. Pydantic v2 schemas with a discriminated union for actions. PyYAML loader with `${ENV_VAR}` substitution. Pillow renderer producing 72×72 RGB JPEGs, color emoji via Pilmoji. Click CLI. pytest + ruff + mypy in CI on Ubuntu and Windows. No daemon, no USB, no OBS execution in this phase - only schema validation and icon rendering.
 
 **Tech Stack:** Python 3.11+, hatchling, Click 8, Pydantic v2, PyYAML 6, Pillow 10+, Pilmoji 2, pytest 8, pytest-cov, ruff, mypy, GitHub Actions.
 
@@ -235,7 +235,7 @@ sdac preview path/to/config.yaml --out preview.png
 - [ ] **Step 6: Write `src/sdac/__init__.py`**
 
 ```python
-"""streamdeck-as-code — cross-platform declarative Stream Deck driver."""
+"""streamdeck-as-code - cross-platform declarative Stream Deck driver."""
 
 __version__ = "0.1.0"
 ```
@@ -375,7 +375,7 @@ from sdac import __version__
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__, prog_name="sdac")
 def main() -> None:
-    """streamdeck-as-code — declarative Stream Deck driver."""
+    """streamdeck-as-code - declarative Stream Deck driver."""
 
 
 @main.command()
@@ -414,7 +414,7 @@ git commit -m "feat(cli): scaffold sdac group with validate + preview placeholde
 
 ---
 
-## Task 3: Config — minimal top-level schema (version, vars, default_profile)
+## Task 3: Config - minimal top-level schema (version, vars, default_profile)
 
 **Files:**
 - Create: `src/sdac/config.py`
@@ -567,7 +567,7 @@ git commit -m "feat(config): minimal top-level Pydantic schema + YAML loader"
 
 ---
 
-## Task 4: Config — KeyConfig + IconSpec + Action discriminated union
+## Task 4: Config - KeyConfig + IconSpec + Action discriminated union
 
 **Files:**
 - Modify: `src/sdac/config.py`
@@ -695,7 +695,7 @@ def test_icon_state_variant_colors_optional():
 Run: `pytest tests/unit/test_config.py -v`
 Expected: AttributeError / ValidationError on the new tests.
 
-- [ ] **Step 4: Extend `src/sdac/config.py`** — add `IconSpec`, `Indicator`, action union, `KeyConfig`, and integrate
+- [ ] **Step 4: Extend `src/sdac/config.py`** - add `IconSpec`, `Indicator`, action union, `KeyConfig`, and integrate
 
 Replace the body of `src/sdac/config.py` with this complete file:
 
@@ -1041,7 +1041,7 @@ git commit -m "feat(config): full schema with discriminated action union + cross
 
 ---
 
-## Task 5: Config — `${ENV_VAR}` substitution
+## Task 5: Config - `${ENV_VAR}` substitution
 
 **Files:**
 - Modify: `src/sdac/config.py`
@@ -1176,7 +1176,7 @@ git commit -m "feat(config): \${ENV_VAR} substitution with missing-var diagnosti
 
 ---
 
-## Task 6: Config — file mode warning (warn-only by default)
+## Task 6: Config - file mode warning (warn-only by default)
 
 **Files:**
 - Modify: `src/sdac/config.py`
@@ -1234,7 +1234,7 @@ Decorate the three perms tests with:
 Run: `pytest tests/unit/test_config.py -v -k perms`
 Expected: failing (no `strict_perms` kwarg yet).
 
-- [ ] **Step 3: Implement** — modify `load_config` signature and add helper
+- [ ] **Step 3: Implement** - modify `load_config` signature and add helper
 
 Replace `load_config` in `src/sdac/config.py`:
 
@@ -1317,7 +1317,7 @@ git commit -m "feat(config): warn-only file permission check, strict mode opt-in
 
 ---
 
-## Task 7: CLI — wire `sdac validate`
+## Task 7: CLI - wire `sdac validate`
 
 **Files:**
 - Modify: `src/sdac/cli.py`
@@ -1371,7 +1371,7 @@ def test_validate_comprehensive_succeeds():
 Run: `pytest tests/unit/test_cli.py -v -k validate`
 Expected: failing (`validate` still raises `UsageError`).
 
-- [ ] **Step 4: Implement** — replace the `validate` body in `src/sdac/cli.py`
+- [ ] **Step 4: Implement** - replace the `validate` body in `src/sdac/cli.py`
 
 ```python
 import sys
@@ -1418,7 +1418,7 @@ git commit -m "feat(cli): wire sdac validate"
 
 ---
 
-## Task 8: Renderer — text + bg color (golden test infrastructure)
+## Task 8: Renderer - text + bg color (golden test infrastructure)
 
 **Files:**
 - Create: `src/sdac/render.py`
@@ -1576,12 +1576,12 @@ def _draw_text(draw: ImageDraw.ImageDraw, text: str, fg: str) -> None:
     draw.text((4, 4), text[:8], fill=fg, font=font)
 ```
 
-- [ ] **Step 5: Run test — should create the golden on first run, then fail telling you to re-run**
+- [ ] **Step 5: Run test - should create the golden on first run, then fail telling you to re-run**
 
 Run: `pytest tests/unit/test_render.py -v`
 Expected: test fails the first time with "Golden ... created (was missing). Re-run tests to verify."
 
-- [ ] **Step 6: Re-run — golden now exists, test passes**
+- [ ] **Step 6: Re-run - golden now exists, test passes**
 
 Run: `pytest tests/unit/test_render.py -v`
 Expected: PASS.
@@ -1602,7 +1602,7 @@ git commit -m "feat(render): text + bg color icon rendering with golden test inf
 
 ---
 
-## Task 9: Renderer — emoji support via Pilmoji
+## Task 9: Renderer - emoji support via Pilmoji
 
 **Files:**
 - Modify: `src/sdac/render.py`
@@ -1707,7 +1707,7 @@ git commit -m "feat(render): emoji rendering via Pilmoji"
 
 ---
 
-## Task 10: Renderer — image-background support
+## Task 10: Renderer - image-background support
 
 **Files:**
 - Modify: `src/sdac/render.py`
@@ -1786,7 +1786,7 @@ git commit -m "feat(render): image-background support"
 
 ---
 
-## Task 11: Renderer — state variants
+## Task 11: Renderer - state variants
 
 **Files:**
 - Modify: `tests/unit/test_render.py`
@@ -1819,7 +1819,7 @@ def test_state_disconnected_uses_default_gray():
     _assert_matches_golden(img, "state_disconnected.png")
 ```
 
-- [ ] **Step 2: Run — Pillow logic is already in place from Task 8; tests just need their goldens**
+- [ ] **Step 2: Run - Pillow logic is already in place from Task 8; tests just need their goldens**
 
 Run: `pytest tests/unit/test_render.py -k state -v`
 Expected: goldens created; second run passes.
@@ -1838,7 +1838,7 @@ git commit -m "test(render): state variant goldens"
 
 ---
 
-## Task 12: Renderer — `render_mosaic` for `sdac preview`
+## Task 12: Renderer - `render_mosaic` for `sdac preview`
 
 **Files:**
 - Modify: `src/sdac/render.py`
@@ -1877,7 +1877,7 @@ def test_render_mosaic_empty_keys_are_blank():
 Run: `pytest tests/unit/test_render.py -k mosaic -v`
 Expected: ImportError on `MK2_COLS`/`MK2_ROWS`/`render_mosaic`.
 
-- [ ] **Step 3: Implement** — add to `src/sdac/render.py`
+- [ ] **Step 3: Implement** - add to `src/sdac/render.py`
 
 ```python
 from sdac.config import PageConfig
@@ -1919,7 +1919,7 @@ git commit -m "feat(render): render_mosaic for offline preview"
 
 ---
 
-## Task 13: CLI — wire `sdac preview`
+## Task 13: CLI - wire `sdac preview`
 
 **Files:**
 - Modify: `src/sdac/cli.py`
@@ -1971,7 +1971,7 @@ def test_preview_unknown_profile_errors(tmp_path: Path):
 Run: `pytest tests/unit/test_cli.py -k preview -v`
 Expected: `UsageError("not implemented yet")`.
 
-- [ ] **Step 3: Implement** — replace `preview` in `src/sdac/cli.py`
+- [ ] **Step 3: Implement** - replace `preview` in `src/sdac/cli.py`
 
 ```python
 from sdac.render import render_mosaic
@@ -2084,19 +2084,19 @@ git commit -m "ci: lint + type + tests on Ubuntu + Windows matrix"
 - Modify: `README.md`
 - Create: `docs/schema.md`
 
-- [ ] **Step 1: Full README** — replace `README.md` placeholder with:
+- [ ] **Step 1: Full README** - replace `README.md` placeholder with:
 
 ```markdown
 # streamdeck-as-code
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 1 (current). `sdac validate` + `sdac preview` work without a USB device. Daemon, OBS integration, and Windows-specific watchers land in Phases 2–4.
+**Status:** Phase 1 (current). `sdac validate` + `sdac preview` work without a USB device. Daemon, OBS integration, and Windows-specific watchers land in Phases 2-4.
 
 ## Phase 1 capabilities
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
-- Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
+- Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
 - Render every key in a profile/page as a single mosaic PNG. No USB device required.
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 
@@ -2260,17 +2260,17 @@ At least one of `text`, `emoji`, `image` must be set.
 | `type` | Required fields | Optional |
 |---|---|---|
 | `shell` | `cmd` | `cwd`, `shell` |
-| `key.chord` | `keys` | — |
-| `key.text` | `text` | — |
-| `open.url` | `url` | — |
-| `open.app` | exactly one of `path`/`name` | — |
-| `obs.scene.switch` | `host`, `scene` | — |
-| `obs.recording.toggle`, `obs.streaming.toggle`, `obs.replay.save`, `obs.virtualcam.toggle` | `host` | — |
-| `obs.input.mute.toggle` | `host`, `input_name` | — |
-| `system.volume.up`/`down` | — | `step` (default 5) |
-| `system.volume.mute`, `media.play`, `media.pause`, `media.next`, `media.prev` | — | — |
-| `page.go` | `page` | — |
-| `profile.switch` | `profile` | — |
+| `key.chord` | `keys` | - |
+| `key.text` | `text` | - |
+| `open.url` | `url` | - |
+| `open.app` | exactly one of `path`/`name` | - |
+| `obs.scene.switch` | `host`, `scene` | - |
+| `obs.recording.toggle`, `obs.streaming.toggle`, `obs.replay.save`, `obs.virtualcam.toggle` | `host` | - |
+| `obs.input.mute.toggle` | `host`, `input_name` | - |
+| `system.volume.up`/`down` | - | `step` (default 5) |
+| `system.volume.mute`, `media.play`, `media.pause`, `media.next`, `media.prev` | - | - |
+| `page.go` | `page` | - |
+| `profile.switch` | `profile` | - |
 | `compound` | `actions: [Action]` | `continue_on_error` (bool) |
 
 ## Indicator (live state binding, Phase 3+)

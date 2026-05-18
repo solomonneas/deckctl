@@ -1,4 +1,4 @@
-"""End-to-end daemon test — exercises every handler category against MockDevice
+"""End-to-end daemon test - exercises every handler category against MockDevice
 in one run, with hot reload thrown in for good measure.
 
 This test asserts Linux-specific platform call shapes (xdotool/pactl). Skipped
@@ -43,7 +43,7 @@ def test_full_lifecycle_against_mock_device(tmp_path: Path):
         assert run.call_count == 1
         assert run.call_args.args[0] == "true"
 
-        # Chord action (key 1) — goes through platform.send_chord -> subprocess.run
+        # Chord action (key 1) - goes through platform.send_chord -> subprocess.run
         with patch("deckctl.platform._linux.subprocess.run") as run:
             device.inject_press(1)
         run.assert_called_with(["xdotool", "key", "ctrl+t"], check=True)
@@ -55,7 +55,7 @@ def test_full_lifecycle_against_mock_device(tmp_path: Path):
             ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+2%"], check=True
         )
 
-        # Compound (key 3 — two shell sub-actions)
+        # Compound (key 3 - two shell sub-actions)
         with patch("subprocess.run") as run:
             device.inject_press(3)
         assert run.call_count == 2

@@ -1,4 +1,4 @@
-# deckctl Phase 6 Implementation Plan — Preset library + `deckctl init`
+# deckctl Phase 6 Implementation Plan - Preset library + `deckctl init`
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -43,7 +43,7 @@ streamdeck-as-code/
 - Create: `src/deckctl/presets/__init__.py`
 - Create: `tests/unit/test_presets.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_presets.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_presets.py`**
 
 ```python
 """Tests for deckctl.presets: the loader, the list, and per-preset schema validation."""
@@ -154,10 +154,10 @@ git commit -m "feat(presets): scaffolding + loader API"
 - Modify: `src/deckctl/presets/__init__.py` (add to DESCRIPTIONS)
 - Modify: `tests/unit/test_presets.py` (add parameterized schema test)
 
-- [ ] **Step 1: Write the preset — `src/deckctl/presets/default.yaml`**
+- [ ] **Step 1: Write the preset - `src/deckctl/presets/default.yaml`**
 
 ```yaml
-# deckctl default preset — minimal 3-key smoke layout.
+# deckctl default preset - minimal 3-key smoke layout.
 # Use after first install to verify everything works, then edit or replace
 # with a richer preset like `deckctl init coding`.
 
@@ -274,10 +274,10 @@ git commit -m "feat(presets): default 3-key smoke preset"
 - Create: `src/deckctl/presets/coding.yaml`
 - Modify: `src/deckctl/presets/__init__.py` (DESCRIPTIONS)
 
-- [ ] **Step 1: Write the preset — `src/deckctl/presets/coding.yaml`**
+- [ ] **Step 1: Write the preset - `src/deckctl/presets/coding.yaml`**
 
 ```yaml
-# deckctl coding preset — dev workflow with 5 pages.
+# deckctl coding preset - dev workflow with 5 pages.
 #
 # Pages: home → git → snippets → terminal → scripts (use page.go to navigate;
 # each sub-page's key 14 is "Back" to home).
@@ -558,7 +558,7 @@ profiles:
             icon: {text: "Back", emoji: "⬅️", bg: "#424242"}
             action: {type: page.go, page: home}
 
-      # coding.scripts — quick launchers for personal scripts.
+      # coding.scripts - quick launchers for personal scripts.
       # Placeholder keys point at ~/scripts/*.sh paths. Either create those
       # scripts, or edit each key's action.cmd to point at where your scripts
       # actually live. Tip: keep ~/scripts/ on PATH so you can invoke by
@@ -631,7 +631,7 @@ pytest tests/unit/test_presets.py -v
 
 Expected: 6 passing (3 generic + 1 schema-validation for `default` + 1 schema-validation for `coding` + 1 loader return check).
 
-If the schema validator complains about something in coding.yaml, fix the YAML — do NOT relax the schema. The renderer requires at least one of `text`/`emoji`/`image` in every icon (no key with empty icon allowed).
+If the schema validator complains about something in coding.yaml, fix the YAML - do NOT relax the schema. The renderer requires at least one of `text`/`emoji`/`image` in every icon (no key with empty icon allowed).
 
 - [ ] **Step 4: Full check**
 
@@ -656,7 +656,7 @@ git commit -m "feat(presets): coding preset with 5 pages (home/git/snippets/term
 - Create: `src/deckctl/presets/streaming-twitch.yaml`
 - Modify: `src/deckctl/presets/__init__.py`
 
-- [ ] **Step 1: Write the preset — `src/deckctl/presets/streaming-twitch.yaml`**
+- [ ] **Step 1: Write the preset - `src/deckctl/presets/streaming-twitch.yaml`**
 
 ```yaml
 # deckctl streaming-twitch preset.
@@ -786,7 +786,7 @@ Expected: 7 tests passing in test_presets.py; 162 total.
 - Create: `src/deckctl/presets/streaming-youtube.yaml`
 - Modify: `src/deckctl/presets/__init__.py`
 
-- [ ] **Step 1: Write the preset — `src/deckctl/presets/streaming-youtube.yaml`**
+- [ ] **Step 1: Write the preset - `src/deckctl/presets/streaming-youtube.yaml`**
 
 ```yaml
 # deckctl streaming-youtube preset.
@@ -916,7 +916,7 @@ Expected: 8 tests in test_presets.py; 163 total.
 - Modify: `src/deckctl/cli.py`
 - Modify: `tests/unit/test_cli.py`
 
-- [ ] **Step 1: Write failing tests — append to `tests/unit/test_cli.py`**
+- [ ] **Step 1: Write failing tests - append to `tests/unit/test_cli.py`**
 
 ```python
 def test_init_list_prints_available_presets():
@@ -1098,7 +1098,7 @@ Insert at the top of CHANGELOG.md (after the header), BEFORE the `## [0.2.0]` se
 
 ### Added
 
-- **Preset library + `deckctl init <preset>`** — bundled YAMLs you can drop into your config with one command:
+- **Preset library + `deckctl init <preset>`** - bundled YAMLs you can drop into your config with one command:
   - `default` (3-key smoke layout)
   - `coding` (dev workflow with 5 pages: home, git, snippets, terminal, scripts; includes Claude + Codex launch buttons)
   - `streaming-twitch` (15 keys: 5 OBS scenes, record/stream/replay/virtual-cam toggles with live indicators, mic mute, Twitch chat + dashboard)
@@ -1138,7 +1138,7 @@ deckctl daemon --config ~/.config/deckctl/config.yaml -v
 Find the `**Status:** Phase 4 ...` paragraph and update it to:
 
 ```markdown
-**Status:** Phase 6 (current, v0.3.0). Bundled preset library — `deckctl init coding` writes a working dev profile (5 pages, Claude + Codex launchers, AUTO key); `deckctl init streaming-twitch` or `streaming-youtube` for streamers. Plus everything from v0.2.0: `deckctl daemon` with full action grammar, OBS integration + live indicators, auto profile switching, systemd service install on Linux, Windows port (Task Scheduler install in Phase 4b).
+**Status:** Phase 6 (current, v0.3.0). Bundled preset library - `deckctl init coding` writes a working dev profile (5 pages, Claude + Codex launchers, AUTO key); `deckctl init streaming-twitch` or `streaming-youtube` for streamers. Plus everything from v0.2.0: `deckctl daemon` with full action grammar, OBS integration + live indicators, auto profile switching, systemd service install on Linux, Windows port (Task Scheduler install in Phase 4b).
 ```
 
 - [ ] **Step 4: Build + verify**
@@ -1164,7 +1164,7 @@ git commit -m "chore: bump to v0.3.0 + Phase 6 CHANGELOG + README"
 
 ## Task 8: Build wheel + tag + GitHub release v0.3.0
 
-**Files:** (none — `gh` operations)
+**Files:** (none - `gh` operations)
 
 - [ ] **Step 1: Build artifacts**
 
@@ -1182,7 +1182,7 @@ Expected: `deckctl-0.3.0-py3-none-any.whl` + `deckctl-0.3.0.tar.gz`.
 
 ```bash
 git push origin main
-git tag -a v0.3.0 -m "v0.3.0 — Phase 6 preset library (deckctl init)"
+git tag -a v0.3.0 -m "v0.3.0 - Phase 6 preset library (deckctl init)"
 git push origin v0.3.0
 ```
 
@@ -1200,7 +1200,7 @@ Expected: notes file with the v0.3.0 section content.
 ```bash
 gh release create v0.3.0 \
     --repo solomonneas/deckctl \
-    --title "v0.3.0 — Preset library (deckctl init)" \
+    --title "v0.3.0 - Preset library (deckctl init)" \
     --notes-file /tmp/v030-notes.md \
     /tmp/deckctl-v030/deckctl-0.3.0-py3-none-any.whl \
     /tmp/deckctl-v030/deckctl-0.3.0.tar.gz
@@ -1239,6 +1239,6 @@ Expected: `in_progress` or `completed/success`. If it failed, surface the log.
 ## Out of scope (future phases per the spec)
 
 - **Phase 6b**: more presets (writing, meeting, etc.) as the use case library grows.
-- **Phase 7**: built-in icon library — `icon: {builtin: git}` resolves to bundled PNGs.
-- **Phase 8**: named-macro library — `action: {type: git.commit}` expands to shell/key.chord.
+- **Phase 7**: built-in icon library - `icon: {builtin: git}` resolves to bundled PNGs.
+- **Phase 8**: named-macro library - `action: {type: git.commit}` expands to shell/key.chord.
 - **Phase 9**: `deckctl edit` TUI.

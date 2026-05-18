@@ -4,7 +4,9 @@ sibling modules (config, render).
 
 from __future__ import annotations
 
+import contextlib
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -19,7 +21,7 @@ from deckctl.render import render_mosaic
 @click.group(context_settings={"help_option_names": ["-h", "--help"]})
 @click.version_option(__version__, prog_name="deckctl")
 def main() -> None:
-    """deckctl — declarative Stream Deck driver."""
+    """deckctl - declarative Stream Deck driver."""
 
 
 @main.command()
@@ -194,8 +196,6 @@ def doctor(config_path: str | None) -> None:
 @click.option("--force", is_flag=True, help="Overwrite destination if it exists.")
 def init(name: str | None, list_only: bool, dest: str | None, force: bool) -> None:
     """Write a bundled preset YAML to a config path."""
-    import contextlib
-
     from deckctl.presets import get_preset, list_presets
 
     presets = list_presets()
@@ -213,13 +213,29 @@ def init(name: str | None, list_only: bool, dest: str | None, force: bool) -> No
     if name not in presets:
         click.echo(f"unknown preset {name!r}; run `deckctl init --list` to see options", err=True)
         sys.exit(1)
-    target = Path(dest) if dest else Path.home() / ".config" / "deckctl" / "config.yaml"
-    if target.exists() and not force:
-        click.echo(f"{target} already exists. Pass --force to overwrite.", err=True)
-        sys.exit(2)
+    if dest:
+        target = Path(dest)
+    else:
+        # Honor XDG_CONFIG_HOME if set, matching sdac.service.user_unit_path().
+        xdg = os.environ.get("XDG_CONFIG_HOME")
+        base = Path(xdg) if xdg else Path.home() / ".config"
+        target = base / "deckctl" / "config.yaml"
     target.parent.mkdir(parents=True, exist_ok=True)
     yaml_text = get_preset(name)
-    target.write_text(yaml_text, encoding="utf-8")
+    # Atomic create when not forcing: `open("x")` raises FileExistsError if the
+    # path exists, closing the TOCTOU window between an exists()-check and write.
+    try:
+        if force:
+            target.write_text(yaml_text, encoding="utf-8")
+        else:
+            with target.open("x", encoding="utf-8") as fh:
+                fh.write(yaml_text)
+    except FileExistsError:
+        click.echo(f"{target} already exists. Pass --force to overwrite.", err=True)
+        sys.exit(2)
+    except OSError as e:
+        click.echo(f"failed to write {target}: {e}", err=True)
+        sys.exit(3)
     with contextlib.suppress(OSError):
         target.chmod(0o600)  # Windows + tmpfs ignore chmod; not fatal
     click.echo(f"Wrote {target}")

@@ -56,10 +56,10 @@ mkdir -p src/sdac/assets/udev src/sdac/assets/systemd
 touch src/sdac/assets/udev/__init__.py src/sdac/assets/systemd/__init__.py
 ```
 
-- [ ] **Step 2: Write the udev rule — `src/sdac/assets/udev/60-streamdeck.rules`**
+- [ ] **Step 2: Write the udev rule - `src/sdac/assets/udev/60-streamdeck.rules`**
 
 ```
-# Elgato Stream Deck — grant uaccess to the active logged-in user.
+# Elgato Stream Deck - grant uaccess to the active logged-in user.
 # Installed by `sdac install-service`. Apply: `sudo udevadm control --reload-rules && sudo udevadm trigger`.
 
 # Vendor: Elgato Systems GmbH (0fd9)
@@ -71,7 +71,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", TAG+="uacce
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", TAG+="uaccess"
 ```
 
-- [ ] **Step 3: Write the systemd unit template — `src/sdac/assets/systemd/sdac.service.template`**
+- [ ] **Step 3: Write the systemd unit template - `src/sdac/assets/systemd/sdac.service.template`**
 
 ```
 [Unit]
@@ -128,7 +128,7 @@ git commit -m "feat(service): udev rule + systemd unit template assets"
 - Create: `src/sdac/service.py`
 - Create: `tests/unit/test_service.py`
 
-- [ ] **Step 1: Write failing tests — `tests/unit/test_service.py`**
+- [ ] **Step 1: Write failing tests - `tests/unit/test_service.py`**
 
 ```python
 from __future__ import annotations
@@ -363,7 +363,7 @@ git commit -m "feat(service): systemd + udev install/uninstall + status query"
 - Modify: `src/sdac/cli.py`
 - Modify: `tests/unit/test_cli.py`
 
-- [ ] **Step 1: Write failing tests — append to `tests/unit/test_cli.py`**
+- [ ] **Step 1: Write failing tests - append to `tests/unit/test_cli.py`**
 
 ```python
 def test_install_service_calls_install_with_resolved_paths(tmp_path: Path):
@@ -468,7 +468,7 @@ git commit -m "feat(cli): install-service verb (systemd + udev via sudo)"
 - Modify: `src/sdac/cli.py`
 - Modify: `tests/unit/test_cli.py`
 
-- [ ] **Step 1: Write failing tests — append to `tests/unit/test_cli.py`**
+- [ ] **Step 1: Write failing tests - append to `tests/unit/test_cli.py`**
 
 ```python
 def test_uninstall_service_invokes_uninstall():
@@ -542,13 +542,13 @@ git commit -m "feat(cli): uninstall-service verb (systemd + udev via sudo)"
 
 ---
 
-## Task 5: Doctor — check primitives + report rendering
+## Task 5: Doctor - check primitives + report rendering
 
 **Files:**
 - Create: `src/sdac/doctor.py`
 - Create: `tests/unit/test_doctor.py`
 
-- [ ] **Step 1: Write failing tests — `tests/unit/test_doctor.py`**
+- [ ] **Step 1: Write failing tests - `tests/unit/test_doctor.py`**
 
 ```python
 from __future__ import annotations
@@ -790,7 +790,7 @@ def check_python_deps() -> CheckResult:
         return CheckResult(
             "python_deps",
             Severity.FAIL,
-            f"missing Python packages: {', '.join(missing)} — run `pip install -e \".[dev]\"`",
+            f"missing Python packages: {', '.join(missing)} - run `pip install -e \".[dev]\"`",
         )
     return CheckResult("python_deps", Severity.PASS, f"all Python deps importable ({len(_PY_DEPS)} packages)")
 
@@ -822,7 +822,7 @@ def check_system_binaries() -> CheckResult:
 
 def check_config(path: str | None) -> CheckResult:
     if path is None:
-        return CheckResult("config", Severity.WARN, "skipped — no --config provided")
+        return CheckResult("config", Severity.WARN, "skipped - no --config provided")
     try:
         cfg = load_config(path)
     except ConfigError as e:
@@ -916,7 +916,7 @@ git commit -m "feat(doctor): check primitives + report rendering"
 - Modify: `src/sdac/cli.py`
 - Modify: `tests/unit/test_cli.py`
 
-- [ ] **Step 1: Write failing tests — append to `tests/unit/test_cli.py`**
+- [ ] **Step 1: Write failing tests - append to `tests/unit/test_cli.py`**
 
 ```python
 def test_doctor_runs_and_prints_report():
@@ -1036,7 +1036,7 @@ sdac install-service --config ~/.config/sdac/config.yaml
 
 This:
 1. Writes `~/.config/systemd/user/sdac.service` pointing at your config.
-2. Installs `/etc/udev/rules.d/60-streamdeck.rules` via `sudo` (prompts once for your password) so the device is reachable to any logged-in user — needed for the unit to find the Deck at boot.
+2. Installs `/etc/udev/rules.d/60-streamdeck.rules` via `sudo` (prompts once for your password) so the device is reachable to any logged-in user - needed for the unit to find the Deck at boot.
 3. Reloads udev, daemon-reloads systemd, enables and starts the service.
 
 To stop and remove:
@@ -1072,13 +1072,13 @@ Replace the existing block with:
 ## Capabilities (Phase 1 + 2a + 2b)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
-- Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
+- Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
 - Render every key in a profile/page as a single mosaic PNG (offline preview, no device required).
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
 - Hot-reload the config without restarting the daemon.
 - Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
-- `sdac doctor` reports on device, deps, service status, and config — exits non-zero if anything fails.
+- `sdac doctor` reports on device, deps, service status, and config - exits non-zero if anything fails.
 ```
 
 - [ ] **Step 4: Write `docs/installation.md`**
@@ -1203,7 +1203,7 @@ Expected: clean.
 
 ```bash
 git add README.md docs/installation.md
-git commit -m "docs: Phase 2b — install-service + doctor + installation walkthrough"
+git commit -m "docs: Phase 2b - install-service + doctor + installation walkthrough"
 ```
 
 ---

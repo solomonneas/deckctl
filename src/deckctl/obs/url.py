@@ -1,6 +1,6 @@
 """Parse `obsws://host:port/password` URLs.
 
-This is the single source of truth for OBS URL parsing — both the event
+This is the single source of truth for OBS URL parsing - both the event
 client and the action handlers use it.
 """
 

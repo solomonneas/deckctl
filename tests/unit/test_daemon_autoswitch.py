@@ -52,7 +52,7 @@ def test_repeat_match_does_not_re_switch_profile():
     d = _daemon(watcher)
     watcher.inject(ActiveWindow(app_class="obs"))
     # MockDevice records images; we don't have access here but switching to same
-    # profile shouldn't churn — verify by inspecting current_profile stability.
+    # profile shouldn't churn - verify by inspecting current_profile stability.
     profile_before = d.current_profile
     watcher.inject(ActiveWindow(app_class="obs"))
     assert d.current_profile == profile_before == "streaming"
@@ -62,6 +62,6 @@ def test_first_matching_rule_wins():
     """Order matters: first match in profile_rules wins."""
     watcher = MockWatcher()
     d = _daemon(watcher)
-    # An ActiveWindow that matches both rules — verify the FIRST one (streaming) wins.
+    # An ActiveWindow that matches both rules - verify the FIRST one (streaming) wins.
     watcher.inject(ActiveWindow(app_class="obs", app_name="firefox.exe"))
     assert d.current_profile == "streaming"

@@ -4,7 +4,7 @@
 
 **Goal:** Run a Linux daemon that owns a Stream Deck MK.2 over USB, renders the active profile/page from the YAML config, dispatches button presses to built-in action handlers (shell, keys, open, system audio, media, navigation, compound), and hot-reloads the config on file change.
 
-**Architecture:** Synchronous threaded daemon. `sdac.device` wraps `python-elgato-streamdeck`; a parallel `MockDevice` powers tests with zero hardware. `sdac.actions` is a registry of handler classes that receive a typed action + a `DaemonContext` for navigation calls. `sdac.platform._linux` shells out to `xdotool`, `pactl`, and `playerctl` for keystroke/audio/media actions — `_windows` exists as a stub raising `NotImplementedError` so the package imports cleanly on Windows (Phase 4 fills it in). `watchdog` watches the config file; valid reloads diff against the previous render set and only re-push changed keys. Daemon survives device unplug by polling for re-enumeration with exponential backoff.
+**Architecture:** Synchronous threaded daemon. `sdac.device` wraps `python-elgato-streamdeck`; a parallel `MockDevice` powers tests with zero hardware. `sdac.actions` is a registry of handler classes that receive a typed action + a `DaemonContext` for navigation calls. `sdac.platform._linux` shells out to `xdotool`, `pactl`, and `playerctl` for keystroke/audio/media actions - `_windows` exists as a stub raising `NotImplementedError` so the package imports cleanly on Windows (Phase 4 fills it in). `watchdog` watches the config file; valid reloads diff against the previous render set and only re-push changed keys. Daemon survives device unplug by polling for re-enumeration with exponential backoff.
 
 **Tech Stack:** Python 3.12, `streamdeck>=0.9` (python-elgato-streamdeck), `watchdog>=4.0`, system packages `xdotool`, `pactl` (PulseAudio/PipeWire), `playerctl`. Tests use `pytest`, no real hardware required.
 
@@ -24,7 +24,7 @@
 
 **Deferred (Phase 2b):** systemd unit install, udev rule install, `sdac doctor`, README install instructions for service setup.
 
-**Deferred (Phase 3):** OBS action execution (`obs.*` types validate but raise `NotImplementedError` at dispatch — schema is already valid), live state indicators, async websocket loop.
+**Deferred (Phase 3):** OBS action execution (`obs.*` types validate but raise `NotImplementedError` at dispatch - schema is already valid), live state indicators, async websocket loop.
 
 **Deferred (Phase 4):** Windows daemon, active-window watcher, Wayland.
 
@@ -130,7 +130,7 @@ pip install -e ".[dev]"
 python -c "import StreamDeck.DeviceManager, watchdog; print('ok')"
 ```
 
-Expected: `ok`. The `streamdeck` PyPI package imports as `StreamDeck` (capitalized) — that's correct, not a typo.
+Expected: `ok`. The `streamdeck` PyPI package imports as `StreamDeck` (capitalized) - that's correct, not a typo.
 
 - [ ] **Step 4: Full check still passes**
 
@@ -157,7 +157,7 @@ git commit -m "deps: add streamdeck + watchdog for Phase 2a daemon"
 - Create: `src/sdac/device/mock.py`
 - Create: `tests/unit/test_device_mock.py`
 
-- [ ] **Step 1: Write the failing test — `tests/unit/test_device_mock.py`**
+- [ ] **Step 1: Write the failing test - `tests/unit/test_device_mock.py`**
 
 ```python
 from __future__ import annotations
@@ -358,14 +358,14 @@ git commit -m "feat(device): Device protocol + MockDevice for tests"
 - Create: `src/sdac/device/streamdeck.py`
 - Modify: `src/sdac/device/__init__.py`
 
-(No new tests here — the real wrapper requires real hardware to exercise. We trust `python-elgato-streamdeck`'s own tests and verify by manual smoke in Task 16. The wrapper's only responsibilities are translating to/from our types.)
+(No new tests here - the real wrapper requires real hardware to exercise. We trust `python-elgato-streamdeck`'s own tests and verify by manual smoke in Task 16. The wrapper's only responsibilities are translating to/from our types.)
 
 - [ ] **Step 1: Write `src/sdac/device/streamdeck.py`**
 
 ```python
 """Real Stream Deck wrapper around the upstream `streamdeck` library.
 
-The daemon never imports `streamdeck.*` directly — all HID code lives here.
+The daemon never imports `streamdeck.*` directly - all HID code lives here.
 """
 
 from __future__ import annotations
@@ -452,7 +452,7 @@ class StreamDeckDevice:
             try:
                 self.set_key_image(i, blank)
             except Exception:
-                # Best-effort — don't mask shutdown problems on a single key
+                # Best-effort - don't mask shutdown problems on a single key
                 pass
 ```
 
@@ -477,7 +477,7 @@ __all__ = [
 ]
 ```
 
-- [ ] **Step 3: Add a single import-smoke test — append to `tests/unit/test_device_mock.py`**
+- [ ] **Step 3: Add a single import-smoke test - append to `tests/unit/test_device_mock.py`**
 
 ```python
 def test_streamdeckdevice_imports():
@@ -518,7 +518,7 @@ git commit -m "feat(device): real StreamDeckDevice wrapper (no HID in tests)"
 
 ---
 
-## Task 4: Platform shim — Linux implementations + Windows stub
+## Task 4: Platform shim - Linux implementations + Windows stub
 
 **Files:**
 - Create: `src/sdac/platform/__init__.py`
@@ -526,11 +526,11 @@ git commit -m "feat(device): real StreamDeckDevice wrapper (no HID in tests)"
 - Create: `src/sdac/platform/_windows.py`
 - Create: `tests/unit/test_platform_linux.py`
 
-- [ ] **Step 1: Write the failing test — `tests/unit/test_platform_linux.py`**
+- [ ] **Step 1: Write the failing test - `tests/unit/test_platform_linux.py`**
 
 ```python
 """Verify the Linux platform shim shells out to the right binaries with the
-right args. We don't actually invoke xdotool/pactl/playerctl — we mock
+right args. We don't actually invoke xdotool/pactl/playerctl - we mock
 subprocess.run and assert on the call shape.
 """
 
@@ -847,7 +847,7 @@ git commit -m "feat(platform): Linux shell-out shim + Windows NotImplementedErro
 - Create: `src/sdac/actions/base.py`
 - Create: `tests/unit/test_actions_registry.py`
 
-- [ ] **Step 1: Write the failing test — `tests/unit/test_actions_registry.py`**
+- [ ] **Step 1: Write the failing test - `tests/unit/test_actions_registry.py`**
 
 ```python
 from __future__ import annotations
@@ -1039,14 +1039,14 @@ git commit -m "feat(actions): registry + ActionHandler/DaemonContext protocols"
 - Modify: `src/sdac/actions/__init__.py` (eager-import the handler module)
 - Create: `tests/unit/test_action_shell.py`
 
-- [ ] **Step 1: Write the failing test — `tests/unit/test_action_shell.py`**
+- [ ] **Step 1: Write the failing test - `tests/unit/test_action_shell.py`**
 
 ```python
 from __future__ import annotations
 
 from unittest.mock import patch
 
-import sdac.actions  # noqa: F401 — ensures handlers are registered
+import sdac.actions  # noqa: F401 - ensures handlers are registered
 from sdac.actions import get_handler
 from sdac.config import ShellAction
 
@@ -1127,7 +1127,7 @@ class ShellHandler:
 Append to `src/sdac/actions/__init__.py` (at the very bottom, after the existing definitions):
 
 ```python
-# Eager imports — every concrete handler module's `@register` runs at import.
+# Eager imports - every concrete handler module's `@register` runs at import.
 # Order is irrelevant but keep alphabetical for tidiness.
 from sdac.actions import shell  # noqa: E402, F401
 ```
@@ -1164,7 +1164,7 @@ git commit -m "feat(actions): shell handler"
 - Modify: `src/sdac/actions/__init__.py`
 - Create: `tests/unit/test_action_keys.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_action_keys.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_action_keys.py`**
 
 ```python
 from __future__ import annotations
@@ -1274,7 +1274,7 @@ git commit -m "feat(actions): key.chord + key.text handlers"
 - Modify: `src/sdac/actions/__init__.py`
 - Create: `tests/unit/test_action_opening.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_action_opening.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_action_opening.py`**
 
 ```python
 from __future__ import annotations
@@ -1397,7 +1397,7 @@ git commit -m "feat(actions): open.url + open.app handlers"
 - Modify: `src/sdac/actions/__init__.py`
 - Create: `tests/unit/test_action_system_audio.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_action_system_audio.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_action_system_audio.py`**
 
 ```python
 from __future__ import annotations
@@ -1606,7 +1606,7 @@ git commit -m "feat(actions): system volume + media key handlers"
 - Create: `tests/unit/test_action_compound.py`
 - Create: `tests/unit/test_action_navigation.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_action_compound.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_action_compound.py`**
 
 ```python
 from __future__ import annotations
@@ -1669,7 +1669,7 @@ def test_compound_continue_on_error_runs_all():
     assert calls == ["fail", "next"]
 ```
 
-- [ ] **Step 2: Write failing test — `tests/unit/test_action_navigation.py`**
+- [ ] **Step 2: Write failing test - `tests/unit/test_action_navigation.py`**
 
 ```python
 from __future__ import annotations
@@ -1753,7 +1753,7 @@ class CompoundHandler:
 ```python
 """Navigation actions: page.go and profile.switch.
 
-These don't shell out — they call back into the daemon via DaemonContext.
+These don't shell out - they call back into the daemon via DaemonContext.
 """
 
 from __future__ import annotations
@@ -1820,7 +1820,7 @@ git commit -m "feat(actions): compound + page.go + profile.switch handlers"
 - Create: `src/sdac/actions/obs.py`
 - Modify: `src/sdac/actions/__init__.py`
 
-(No tests — these only exist so the registry can resolve every action type the schema admits, and so the daemon doesn't blow up at dispatch time with KeyError. Each handler raises a clear NotImplementedError telling the user that OBS support arrives in Phase 3. Tests would just assert "raises NotImplementedError", which is low-value.)
+(No tests - these only exist so the registry can resolve every action type the schema admits, and so the daemon doesn't blow up at dispatch time with KeyError. Each handler raises a clear NotImplementedError telling the user that OBS support arrives in Phase 3. Tests would just assert "raises NotImplementedError", which is low-value.)
 
 - [ ] **Step 1: Write `src/sdac/actions/obs.py`**
 
@@ -1931,7 +1931,7 @@ Expected 20 entries (every action type the discriminated union covers):
  'system.volume.down', 'system.volume.mute', 'system.volume.up']
 ```
 
-That's 21 — the spec said 21 action types and we have all of them. If the count differs, STOP and audit.
+That's 21 - the spec said 21 action types and we have all of them. If the count differs, STOP and audit.
 
 - [ ] **Step 4: Full check**
 
@@ -1956,7 +1956,7 @@ git commit -m "feat(actions): OBS handler stubs (raise until Phase 3)"
 - Create: `src/sdac/daemon.py`
 - Create: `tests/unit/test_daemon.py`
 
-- [ ] **Step 1: Write failing test — `tests/unit/test_daemon.py`**
+- [ ] **Step 1: Write failing test - `tests/unit/test_daemon.py`**
 
 ```python
 from __future__ import annotations
@@ -2046,7 +2046,7 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
         with patch("subprocess.run", side_effect=boom):
             device.inject_press(0)
     assert any("boom" in rec.message or "boom" in str(rec.exc_info) for rec in caplog.records)
-    # Daemon is still wired up — a follow-on press still dispatches
+    # Daemon is still wired up - a follow-on press still dispatches
     with patch("subprocess.run") as run:
         device.inject_press(1)
     assert run.call_count == 1  # key.chord action; xdotool was patched as subprocess.run
@@ -2222,7 +2222,7 @@ git commit -m "feat(daemon): orchestrator with key dispatch and navigation"
 - Modify: `src/sdac/daemon.py`
 - Modify: `tests/unit/test_daemon.py`
 
-- [ ] **Step 1: Write failing test — append to `tests/unit/test_daemon.py`**
+- [ ] **Step 1: Write failing test - append to `tests/unit/test_daemon.py`**
 
 ```python
 def test_daemon_hot_reload_picks_up_new_config(tmp_path: Path):
@@ -2426,7 +2426,7 @@ In `src/sdac/device/streamdeck.py`, add:
         return cls(decks[0])
 ```
 
-- [ ] **Step 2: Write failing test — `tests/unit/test_daemon_hotplug.py`**
+- [ ] **Step 2: Write failing test - `tests/unit/test_daemon_hotplug.py`**
 
 ```python
 from __future__ import annotations
@@ -2491,7 +2491,7 @@ Expected: 2 passing already? `render_current_page` was written to re-open if clo
 
 If `test_set_key_image_failure_is_logged_and_skipped` fails because the existing logging doesn't include the key index clearly, adjust the `log.exception("failed to set key %d image", idx)` in `render_current_page` so the test's substring matches.
 
-- [ ] **Step 4: If the device disconnects DURING runtime, the next key callback won't fire — but the daemon won't crash. Add a `run_forever` loop method to `Daemon` for the `sdac daemon` CLI verb (next task uses it):**
+- [ ] **Step 4: If the device disconnects DURING runtime, the next key callback won't fire - but the daemon won't crash. Add a `run_forever` loop method to `Daemon` for the `sdac daemon` CLI verb (next task uses it):**
 
 Append to `src/sdac/daemon.py`:
 
@@ -2520,7 +2520,7 @@ import time as _time
                 self._device.close()
 ```
 
-(Move `import signal` and `import threading` to the top of the file — `threading` is already there from Task 12. Add `import signal`.)
+(Move `import signal` and `import threading` to the top of the file - `threading` is already there from Task 12. Add `import signal`.)
 
 - [ ] **Step 5: Run tests + full check**
 
@@ -2545,7 +2545,7 @@ git commit -m "feat(daemon): hotplug resilience + run_forever + signal handling"
 - Modify: `src/sdac/cli.py`
 - Modify: `tests/unit/test_cli.py`
 
-- [ ] **Step 1: Write failing tests — append to `tests/unit/test_cli.py`**
+- [ ] **Step 1: Write failing tests - append to `tests/unit/test_cli.py`**
 
 ```python
 def test_daemon_command_uses_mock_device_when_flag_set(tmp_path: Path):
@@ -2714,7 +2714,7 @@ profiles:
 - [ ] **Step 3: Write `tests/integration/test_daemon_e2e.py`**
 
 ```python
-"""End-to-end daemon test — exercises every handler category against MockDevice
+"""End-to-end daemon test - exercises every handler category against MockDevice
 in one run, with hot reload thrown in for good measure.
 """
 
@@ -2825,7 +2825,7 @@ git commit -m "test(integration): end-to-end daemon lifecycle on MockDevice"
 - Modify: `README.md`
 - Modify: `docs/schema.md` (note Phase 2a status changes for action execution)
 
-- [ ] **Step 1: Update `README.md`** — change the status line + add Phase 2a quick start
+- [ ] **Step 1: Update `README.md`** - change the status line + add Phase 2a quick start
 
 Find the line `**Status:** Phase 1 (current). \`sdac validate\` + \`sdac preview\` work without a USB device.` and replace the entire status paragraph with:
 
@@ -2844,7 +2844,7 @@ Run the daemon against a plugged-in Stream Deck MK.2:
 sdac daemon --config ~/.config/sdac/config.yaml -v
 ```
 
-Or against an in-memory mock device (no hardware required — useful for testing your config):
+Or against an in-memory mock device (no hardware required - useful for testing your config):
 
 ```bash
 sdac daemon --config ~/.config/sdac/config.yaml --mock -v
@@ -2852,10 +2852,10 @@ sdac daemon --config ~/.config/sdac/config.yaml --mock -v
 
 The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `sdac install-service` command that registers a systemd user unit so it autostarts at login.
 
-Edit the config file while the daemon is running — it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
+Edit the config file while the daemon is running - it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
 ```
 
-- [ ] **Step 2: Update `docs/schema.md`** — add a Phase 2a note about OBS action stubs
+- [ ] **Step 2: Update `docs/schema.md`** - add a Phase 2a note about OBS action stubs
 
 At the top of the "Actions" section, add a paragraph:
 
@@ -2863,7 +2863,7 @@ At the top of the "Actions" section, add a paragraph:
 **Phase 2a runtime note:** the `obs.*` action types validate in the schema but their handlers currently raise `NotImplementedError` at dispatch. Real OBS execution arrives in Phase 3. All other action types execute normally.
 ```
 
-- [ ] **Step 3: Update existing Phase 1 line in README — strike "no USB device required"**
+- [ ] **Step 3: Update existing Phase 1 line in README - strike "no USB device required"**
 
 Find the Phase 1 capabilities section and adjust the leading paragraph:
 
@@ -2871,7 +2871,7 @@ Find the Phase 1 capabilities section and adjust the leading paragraph:
 ## Capabilities (Phase 1 + 2a)
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
-- Resolve `${ENV_VAR}` in any string field — keep passwords out of the YAML.
+- Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
 - Render every key in a profile/page as a single mosaic PNG (offline preview, no device required).
 - Warn (or strict-reject with `--strict-perms`) when the config file is world-readable on POSIX.
 - Run a daemon that owns a real Stream Deck MK.2 over USB and dispatches button presses to handlers.
@@ -2890,7 +2890,7 @@ Expected: clean, 84 tests passing.
 
 ```bash
 git add README.md docs/schema.md
-git commit -m "docs: Phase 2a — daemon section + status update"
+git commit -m "docs: Phase 2a - daemon section + status update"
 ```
 
 ---

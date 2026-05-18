@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import deckctl.actions  # noqa: F401 — ensures handlers are registered
+import deckctl.actions  # noqa: F401 - ensures handlers are registered
 from deckctl.actions import get_handler
 from deckctl.config import ShellAction
 

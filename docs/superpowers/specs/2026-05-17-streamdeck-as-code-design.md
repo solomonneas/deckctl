@@ -1,4 +1,4 @@
-# streamdeck-as-code — Design Spec
+# streamdeck-as-code - Design Spec
 
 - **Status:** Draft (awaiting user review)
 - **Date:** 2026-05-17
@@ -8,19 +8,19 @@
 
 ## Overview
 
-A cross-platform daemon and CLI that drives an Elgato Stream Deck directly from a declarative YAML config. Both Linux and Windows run the same Python daemon talking to the device over USB HID. No Elgato official app, no StreamController — one process, one config, identical behavior on both hosts.
+A cross-platform daemon and CLI that drives an Elgato Stream Deck directly from a declarative YAML config. Both Linux and Windows run the same Python daemon talking to the device over USB HID. No Elgato official app, no StreamController - one process, one config, identical behavior on both hosts.
 
-Primary use case is programming workflows (run tests, build, jump windows, paste snippets, git ops). Secondary use case is dev-streaming workflows: scene switching, recording, replay buffer, mute indicators — all driven through the existing obs-cmd LAN setup so a single Stream Deck can control OBS instances on any host on the home network.
+Primary use case is programming workflows (run tests, build, jump windows, paste snippets, git ops). Secondary use case is dev-streaming workflows: scene switching, recording, replay buffer, mute indicators - all driven through the existing obs-cmd LAN setup so a single Stream Deck can control OBS instances on any host on the home network.
 
 Shipped as two public repos: `streamdeck-as-code` (the tool) and `my-streamdeck-config` (Solomon's personal config and a working example). pipx-installable, ClawHub package, GitHub releases.
 
 ## Goals
 
 1. One YAML config produces identical behavior on Linux and Windows.
-2. Hot reload on config change — no daemon restart needed.
+2. Hot reload on config change - no daemon restart needed.
 3. Built-in integration with the existing `obs-cmd` multi-host setup. A button on a Linux-hosted Deck can control OBS on the Windows host and vice versa.
 4. Action grammar covers programming (shell, key chords, text snippets, window control) and streaming (scenes, recording, mute, replay).
-5. Live state on buttons — recording indicator lights up red when OBS is recording, mute button reflects actual mute state, etc.
+5. Live state on buttons - recording indicator lights up red when OBS is recording, mute button reflects actual mute state, etc.
 6. Auto-profile-switching based on focused application (per-OS implementation).
 7. Service install (systemd user unit on Linux, Task Scheduler entry on Windows).
 8. Robust to device hotplug, OBS host disconnects, malformed config edits.
@@ -81,32 +81,32 @@ Single Python process per host:
 
 ### Components
 
-**`sdac.device`** — USB HID I/O via `streamdeck` library (https://github.com/abcminiuser/python-elgato-streamdeck). MK.2 is supported upstream. Wraps device open/close, key press callbacks, key image push. Single-device assumption for v1 (multi-device deferred).
+**`sdac.device`** - USB HID I/O via `streamdeck` library (https://github.com/abcminiuser/python-elgato-streamdeck). MK.2 is supported upstream. Wraps device open/close, key press callbacks, key image push. Single-device assumption for v1 (multi-device deferred).
 
-**`sdac.config`** — YAML parser, schema validator (Pydantic v2). Loads `~/.config/sdac/config.yaml` by default. Enforces mode 0600 (warn + refuse with `--strict-perms`, warn-only by default). Resolves `${ENV_VAR}` substitutions in string fields before validation, so passwords never appear in the validated model representation logged on error. Watches the file via `watchdog`. On reload, diffs the model and pushes only the changed keys to the device. Schema validation errors render an error icon on key 0 with notify, rather than crashing the daemon.
+**`sdac.config`** - YAML parser, schema validator (Pydantic v2). Loads `~/.config/sdac/config.yaml` by default. Enforces mode 0600 (warn + refuse with `--strict-perms`, warn-only by default). Resolves `${ENV_VAR}` substitutions in string fields before validation, so passwords never appear in the validated model representation logged on error. Watches the file via `watchdog`. On reload, diffs the model and pushes only the changed keys to the device. Schema validation errors render an error icon on key 0 with notify, rather than crashing the daemon.
 
-**`sdac.render`** — PIL-based icon renderer. Inputs: text + bg color + emoji + optional image path + state variant (idle/active/pressed/error/disconnected). Outputs: 72×72 JPEG bytes for the device. Caches by content hash. Supports dynamic icons (e.g., recording indicator rendered with a red dot when OBS is active).
+**`sdac.render`** - PIL-based icon renderer. Inputs: text + bg color + emoji + optional image path + state variant (idle/active/pressed/error/disconnected). Outputs: 72×72 JPEG bytes for the device. Caches by content hash. Supports dynamic icons (e.g., recording indicator rendered with a red dot when OBS is active).
 
-**`sdac.actions`** — Registry of action types. Each action is a class with a typed parameter schema and an async `execute(context)` method. Built-in types listed in *Action grammar* below.
+**`sdac.actions`** - Registry of action types. Each action is a class with a typed parameter schema and an async `execute(context)` method. Built-in types listed in *Action grammar* below.
 
-**`sdac.daemon`** — Orchestrator. Holds device, config, current profile/page, OBS clients, watchers. Receives key-press events from device, looks up the action for the current profile/page/key, dispatches asynchronously. Receives OBS events, updates state-bound key images. Receives active-window changes, switches profile if a rule matches.
+**`sdac.daemon`** - Orchestrator. Holds device, config, current profile/page, OBS clients, watchers. Receives key-press events from device, looks up the action for the current profile/page/key, dispatches asynchronously. Receives OBS events, updates state-bound key images. Receives active-window changes, switches profile if a rule matches.
 
-**`sdac.obs`** — Thin async obs-websocket-5 client per configured host. Subscribes to events relevant to bound indicators (RecordStateChanged, StreamStateChanged, InputMuteStateChanged, CurrentProgramSceneChanged). Re-issues actions through `obs-cmd` for parity with the existing wrapper (decision: shell out to `obs-cmd` for actions, native websocket only for event subscription, to avoid duplicating auth logic).
+**`sdac.obs`** - Thin async obs-websocket-5 client per configured host. Subscribes to events relevant to bound indicators (RecordStateChanged, StreamStateChanged, InputMuteStateChanged, CurrentProgramSceneChanged). Re-issues actions through `obs-cmd` for parity with the existing wrapper (decision: shell out to `obs-cmd` for actions, native websocket only for event subscription, to avoid duplicating auth logic).
 
-**`sdac.watchers.active_window`** — Per-OS module.
+**`sdac.watchers.active_window`** - Per-OS module.
 - Linux (X11): `python-xlib` + ewmh to watch `_NET_ACTIVE_WINDOW` changes. Read `WM_CLASS` on each change.
 - Windows: `pywin32` `GetForegroundWindow` polled every 250ms (or via SetWinEventHook for event-driven). Read process name via `GetWindowThreadProcessId` + `OpenProcess` + `GetModuleFileNameEx`.
 
-**`sdac.cli`** — Click-based CLI. Commands:
-- `sdac daemon [--config PATH]` — run foreground (default for systemd/scheduler invocation)
-- `sdac validate [PATH]` — schema-check config
-- `sdac preview [PATH] [--out preview.png]` — render the whole profile as one mosaic image, no device required
-- `sdac doctor` — verify device, deps, permissions, OBS hosts reachable, conflicts (Elgato services, StreamController autostart)
-- `sdac install-service` — systemd user unit (Linux) or Task Scheduler at-login (Windows). Idempotent.
-- `sdac uninstall-service` — undo above
+**`sdac.cli`** - Click-based CLI. Commands:
+- `sdac daemon [--config PATH]` - run foreground (default for systemd/scheduler invocation)
+- `sdac validate [PATH]` - schema-check config
+- `sdac preview [PATH] [--out preview.png]` - render the whole profile as one mosaic image, no device required
+- `sdac doctor` - verify device, deps, permissions, OBS hosts reachable, conflicts (Elgato services, StreamController autostart)
+- `sdac install-service` - systemd user unit (Linux) or Task Scheduler at-login (Windows). Idempotent.
+- `sdac uninstall-service` - undo above
 - `sdac version`
 
-**`sdac.service`** — Install helpers. On Linux, drops `~/.config/systemd/user/sdac.service` and enables/starts via `systemctl --user`. Also installs the udev rule (`/etc/udev/rules.d/60-streamdeck.rules`) via sudo, prompting the user. On Windows, registers a Task Scheduler entry that runs `sdac daemon` at logon, restart on failure.
+**`sdac.service`** - Install helpers. On Linux, drops `~/.config/systemd/user/sdac.service` and enables/starts via `systemctl --user`. Also installs the udev rule (`/etc/udev/rules.d/60-streamdeck.rules`) via sudo, prompting the user. On Windows, registers a Task Scheduler entry that runs `sdac daemon` at logon, restart on failure.
 
 ## YAML schema
 
@@ -212,7 +212,7 @@ profiles:
 | `obs.virtualcam.toggle` | `host` | Toggle virtual cam. |
 | `obs.input.mute.toggle` | `host`, `input_name` | Mute/unmute an audio input. |
 | `system.volume.up` / `down` / `mute` | optional `step` | OS volume control. |
-| `media.play` / `pause` / `next` / `prev` | — | OS media key. |
+| `media.play` / `pause` / `next` / `prev` | - | OS media key. |
 | `page.go` | `page` (string) | Navigate within current profile. |
 | `profile.switch` | `profile` (string) | Manual profile switch (overrides auto rules for the rest of the session). |
 | `compound` | `actions` (list) | Run a sequence. Stops on first failure unless `continue_on_error: true`. |
@@ -265,9 +265,9 @@ Buttons can bind their `active` icon variant to an OBS event source. The daemon 
 - **ClawHub:** mirror the PyPI package per the established pattern.
 - **GitHub releases:** sdist + wheel attached to each tag.
 - **Optional extras:**
-  - `[obs]` — async websocket client (`obsws-python` or `simpleobsws`).
-  - `[linux]` — `python-xlib`, `pydbus`, requires `xdotool` system package.
-  - `[windows]` — `pywin32`.
+  - `[obs]` - async websocket client (`obsws-python` or `simpleobsws`).
+  - `[linux]` - `python-xlib`, `pydbus`, requires `xdotool` system package.
+  - `[windows]` - `pywin32`.
 - **Platform markers in pyproject** auto-install the right extras.
 - **README:** follows the 5-client setup pattern (per Solomon's standing rule for AI/MCP-adjacent tools); for this tool the section is "Installing on each host" with concrete commands for Ubuntu + Windows.
 - **License:** MIT.
@@ -336,7 +336,7 @@ my-streamdeck-config/
   config.yaml
   icons/                # custom image files referenced by config
   README.md             # explains the layout choices
-  .gitignore            # never commit secrets — passwords/keys via env or sops
+  .gitignore            # never commit secrets - passwords/keys via env or sops
 ```
 
 ## Migration / rollout
@@ -354,7 +354,7 @@ Each phase is its own implementation plan (writing-plans skill produces them).
 ## Risks
 
 - **Elgato Windows-app conflict.** Highest practical risk. Mitigation: doctor + install-service handle it explicitly. Documented.
-- **udev permissions on Linux.** Currently only session-ACL grants access — if daemon runs at boot before login, fails. Mitigation: udev rule install step, plus systemd user unit (not system unit) so it starts at user session.
+- **udev permissions on Linux.** Currently only session-ACL grants access - if daemon runs at boot before login, fails. Mitigation: udev rule install step, plus systemd user unit (not system unit) so it starts at user session.
 - **python-elgato-streamdeck maintenance.** Library is stable but lightly maintained. Vendor a tagged version into the lockfile; if it goes unmaintained, library is small enough to fork.
 - **Scope creep.** Easy to chase XL/Plus/Mini support too early. Decision: MK.2 only in v1, architecture leaves room.
 - **Wayland.** Future blocker for Linux active-window. Out of scope for v1 (the dev host is X11). Documented.

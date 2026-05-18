@@ -1,7 +1,7 @@
 """Windows implementations of platform-dependent action primitives.
 
 `send_chord`, `type_text`, and the four `media_*` functions are implemented
-via pywin32's keybd_event. `volume_*` remains NotImplementedError — Phase 4b
+via pywin32's keybd_event. `volume_*` remains NotImplementedError - Phase 4b
 will wire pycaw or shell to nircmd.
 
 Untested on the Linux dev machine; correctness will be verified when the
@@ -31,6 +31,28 @@ _VK_MODIFIERS = {
     "super": 0x5B,
     "cmd": 0x5B,
 }
+
+# Named special keys. Lowercased; aliases collapse to the same VK.
+# Reference: https://learn.microsoft.com/windows/win32/inputdev/virtual-key-codes
+_VK_SPECIAL = {
+    "return": 0x0D, "enter": 0x0D,
+    "tab": 0x09,
+    "escape": 0x1B, "esc": 0x1B,
+    "backspace": 0x08,
+    "space": 0x20,
+    "up": 0x26,
+    "down": 0x28,
+    "left": 0x25,
+    "right": 0x27,
+    "home": 0x24,
+    "end": 0x23,
+    "pageup": 0x21, "pgup": 0x21,
+    "pagedown": 0x22, "pgdn": 0x22,
+    "insert": 0x2D, "ins": 0x2D,
+    "delete": 0x2E, "del": 0x2E,
+    "apostrophe": 0xDE,  # OEM_7 (matches xdotool's "apostrophe" token)
+    **{f"f{i}": 0x6F + i for i in range(1, 13)},  # F1=0x70 .. F12=0x7B
+}
 _KEYEVENTF_KEYUP = 0x0002
 
 
@@ -42,12 +64,20 @@ def _keybd_event(vk: int, up: bool = False) -> None:
 
 
 def _vk_for(token: str) -> int:
-    """Resolve a chord token (modifier name or single character) to a virtual key code."""
-    import win32api
+    """Resolve a chord token to a virtual key code.
+
+    Accepts: known modifiers (ctrl, shift, ...), named special keys (Return,
+    Tab, Escape, arrows, F1-F12, etc.), or any single character. pywin32 is
+    only imported on the single-char fallback path so the named-key paths
+    work in environments without pywin32 (e.g. our Linux CI unit tests).
+    """
     token = token.lower()
     if token in _VK_MODIFIERS:
         return _VK_MODIFIERS[token]
+    if token in _VK_SPECIAL:
+        return _VK_SPECIAL[token]
     if len(token) == 1:
+        import win32api
         # VkKeyScan returns the VK code in the low byte and shift state in the high byte.
         vk: int = win32api.VkKeyScan(token) & 0xFF
         return vk

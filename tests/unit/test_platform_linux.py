@@ -1,5 +1,5 @@
 """Verify the Linux platform shim shells out to the right binaries with the
-right args. We don't actually invoke xdotool/pactl/playerctl — we mock
+right args. We don't actually invoke xdotool/pactl/playerctl - we mock
 subprocess.run and assert on the call shape.
 """
 
