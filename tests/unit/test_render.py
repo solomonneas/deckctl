@@ -1,7 +1,7 @@
 """Renderer tests. Uses golden images.
 
 Regenerate goldens by running:
-    SDAC_REGEN=1 pytest tests/unit/test_render.py
+    DECKCTL_REGEN=1 pytest tests/unit/test_render.py
 Review the resulting PNGs in tests/fixtures/goldens/ before committing.
 
 Goldens were generated on Linux with the system Pillow + freetype. They do
@@ -20,11 +20,11 @@ from pathlib import Path
 import pytest
 from PIL import Image, ImageChops
 
-from sdac.config import IconSpec, KeyConfig, ShellAction, load_config
-from sdac.render import KEY_SIZE, MK2_COLS, MK2_ROWS, render_key, render_mosaic
+from deckctl.config import IconSpec, KeyConfig, ShellAction, load_config
+from deckctl.render import KEY_SIZE, MK2_COLS, MK2_ROWS, render_key, render_mosaic
 
 GOLDENS = Path(__file__).parent.parent / "fixtures" / "goldens"
-REGEN = os.environ.get("SDAC_REGEN") == "1"
+REGEN = os.environ.get("DECKCTL_REGEN") == "1"
 WINDOWS = sys.platform.startswith("win")
 SKIP_GOLDEN_ON_WINDOWS = pytest.mark.skipif(
     WINDOWS, reason="goldens generated on Linux freetype; Windows produces slightly different pixels"

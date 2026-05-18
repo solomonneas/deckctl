@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import sdac.actions  # noqa: F401
-from sdac.actions import get_handler
-from sdac.config import OpenAppAction, OpenUrlAction
+import deckctl.actions  # noqa: F401
+from deckctl.actions import get_handler
+from deckctl.config import OpenAppAction, OpenUrlAction
 
 
 class _NullCtx:
@@ -17,14 +17,14 @@ class _NullCtx:
 
 def test_open_url_calls_platform_open_url():
     action = OpenUrlAction(type="open.url", url="https://example.com")
-    with patch("sdac.actions.opening.open_url") as f:
+    with patch("deckctl.actions.opening.open_url") as f:
         get_handler("open.url").execute(action, _NullCtx())
     f.assert_called_once_with("https://example.com")
 
 
 def test_open_app_with_path_calls_open_app():
     action = OpenAppAction(type="open.app", path="/usr/bin/code")
-    with patch("sdac.actions.opening.open_app") as f:
+    with patch("deckctl.actions.opening.open_app") as f:
         get_handler("open.app").execute(action, _NullCtx())
     f.assert_called_once_with("/usr/bin/code")
 

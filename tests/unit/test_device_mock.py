@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from PIL import Image
 
-from sdac.device import MockDevice
-from sdac.device.base import KeyEvent
+from deckctl.device import MockDevice
+from deckctl.device.base import KeyEvent
 
 
 def test_mock_device_open_close():
@@ -49,4 +49,4 @@ def test_mock_device_set_key_image_rejects_out_of_range():
 
 def test_streamdeckdevice_imports():
     """The real wrapper module should import even without a device attached."""
-    from sdac.device.streamdeck import DeviceNotFoundError, StreamDeckDevice  # noqa: F401
+    from deckctl.device.streamdeck import DeviceNotFoundError, StreamDeckDevice  # noqa: F401

@@ -4,9 +4,9 @@ from typing import ClassVar
 
 import pytest
 
-from sdac.actions import HANDLERS, get_handler, register
-from sdac.actions.base import ActionHandler, DaemonContext
-from sdac.config import ShellAction
+from deckctl.actions import HANDLERS, get_handler, register
+from deckctl.actions.base import ActionHandler, DaemonContext
+from deckctl.config import ShellAction
 
 
 class _FakeCtx:

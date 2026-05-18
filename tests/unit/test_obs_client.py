@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from sdac.obs.client import OBSClient, OBSConnectError, OBSEvent
+from deckctl.obs.client import OBSClient, OBSConnectError, OBSEvent
 
 
 def test_obs_event_dataclass_holds_kind_qualifier_active():

@@ -2,7 +2,7 @@ version: 1
 default_profile: streaming
 obs_hosts:
   roc:
-    url: obsws://127.0.0.1:4455/${SDAC_TEST_OBS_PASS}
+    url: obsws://127.0.0.1:4455/${DECKCTL_TEST_OBS_PASS}
 profiles:
   streaming:
     default_page: home

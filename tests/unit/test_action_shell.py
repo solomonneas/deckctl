@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import sdac.actions  # noqa: F401 — ensures handlers are registered
-from sdac.actions import get_handler
-from sdac.config import ShellAction
+import deckctl.actions  # noqa: F401 — ensures handlers are registered
+from deckctl.actions import get_handler
+from deckctl.config import ShellAction
 
 
 class _NullCtx:

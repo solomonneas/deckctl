@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from sdac.obs.url import ParsedObsws, parse_obsws_url
+from deckctl.obs.url import ParsedObsws, parse_obsws_url
 
 
 def test_parse_full_url():

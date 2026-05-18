@@ -17,8 +17,8 @@ import pytest
 if sys.platform.startswith("win"):
     pytest.skip("Linux-shape integration test", allow_module_level=True)
 
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
+from deckctl.daemon import Daemon
+from deckctl.device import MockDevice
 
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "configs" / "daemon_smoke.yaml"
 
@@ -44,12 +44,12 @@ def test_full_lifecycle_against_mock_device(tmp_path: Path):
         assert run.call_args.args[0] == "true"
 
         # Chord action (key 1) — goes through platform.send_chord -> subprocess.run
-        with patch("sdac.platform._linux.subprocess.run") as run:
+        with patch("deckctl.platform._linux.subprocess.run") as run:
             device.inject_press(1)
         run.assert_called_with(["xdotool", "key", "ctrl+t"], check=True)
 
         # Volume up (key 2)
-        with patch("sdac.platform._linux.subprocess.run") as run:
+        with patch("deckctl.platform._linux.subprocess.run") as run:
             device.inject_press(2)
         run.assert_called_with(
             ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+2%"], check=True

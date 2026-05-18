@@ -5,8 +5,8 @@ from pathlib import Path
 
 from PIL import Image
 
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
+from deckctl.daemon import Daemon
+from deckctl.device import MockDevice
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 
@@ -44,7 +44,7 @@ def test_set_key_image_failure_is_logged_and_skipped(caplog):
     device.fail_on_key = 3
     d = Daemon(device=device, config_path=FIXTURES / "comprehensive.yaml")
     d.load()
-    with caplog.at_level(logging.ERROR, logger="sdac.daemon"):
+    with caplog.at_level(logging.ERROR, logger="deckctl.daemon"):
         d.render_current_page()
     assert 3 not in device.images_pushed
     # Other keys still rendered

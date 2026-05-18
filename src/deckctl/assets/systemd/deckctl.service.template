@@ -1,0 +1,15 @@
+[Unit]
+Description=deckctl daemon
+Documentation=https://github.com/solomonneas/deckctl
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart={deckctl_path} daemon --config {config_path}
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

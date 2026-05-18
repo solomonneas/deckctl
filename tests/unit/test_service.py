@@ -8,7 +8,7 @@ import pytest
 WINDOWS = sys.platform.startswith("win")
 pytestmark = pytest.mark.skipif(WINDOWS, reason="systemd is Linux-only")
 
-from sdac.service import (  # noqa: E402
+from deckctl.service import (  # noqa: E402
     SERVICE_NAME,
     UDEV_RULE_NAME,
     render_systemd_unit,
@@ -32,12 +32,12 @@ def test_user_unit_path_falls_back_to_home_dot_config(tmp_path: Path, monkeypatc
 
 def test_render_systemd_unit_substitutes_paths():
     rendered = render_systemd_unit(
-        sdac_path="/home/user/.local/bin/sdac",
-        config_path="/home/user/.config/sdac/config.yaml",
+        deckctl_path="/home/user/.local/bin/deckctl",
+        config_path="/home/user/.config/deckctl/config.yaml",
     )
-    assert "/home/user/.local/bin/sdac daemon" in rendered
-    assert "--config /home/user/.config/sdac/config.yaml" in rendered
-    assert "{sdac_path}" not in rendered
+    assert "/home/user/.local/bin/deckctl daemon" in rendered
+    assert "--config /home/user/.config/deckctl/config.yaml" in rendered
+    assert "{deckctl_path}" not in rendered
     assert "{config_path}" not in rendered
     assert "[Service]" in rendered
     assert "Restart=on-failure" in rendered

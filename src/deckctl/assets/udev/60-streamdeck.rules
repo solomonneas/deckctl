@@ -1,0 +1,10 @@
+# Elgato Stream Deck — grant uaccess to the active logged-in user.
+# Installed by `deckctl install-service`. Apply: `sudo udevadm control --reload-rules && sudo udevadm trigger`.
+
+# Vendor: Elgato Systems GmbH (0fd9)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", TAG+="uaccess"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", TAG+="uaccess"
+
+# Specifically the MK.2 (0x0080) and other 15-key variants
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="006d", TAG+="uaccess"

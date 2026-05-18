@@ -6,10 +6,10 @@ from unittest.mock import patch
 
 import pytest
 
-import sdac.actions  # noqa: F401 — registers handlers
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
-from sdac.errors import ConfigError
+import deckctl.actions  # noqa: F401 — registers handlers
+from deckctl.daemon import Daemon
+from deckctl.device import MockDevice
+from deckctl.errors import ConfigError
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 
@@ -82,7 +82,7 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
         raise RuntimeError("boom")
 
     with (
-        caplog.at_level(logging.ERROR, logger="sdac.daemon"),
+        caplog.at_level(logging.ERROR, logger="deckctl.daemon"),
         patch("subprocess.run", side_effect=boom),
     ):
         device.inject_press(0)
@@ -90,7 +90,7 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
         "boom" in rec.message or "boom" in str(rec.exc_info) for rec in caplog.records
     )
     # Daemon still wired up — a follow-on press still dispatches. Key 1 is
-    # key.chord which on Linux routes through sdac.platform._linux.subprocess.run
+    # key.chord which on Linux routes through deckctl.platform._linux.subprocess.run
     # (patching canonical subprocess.run intercepts it). On Windows it routes
     # through keybd_event so the same mock doesn't apply — skip the second-press
     # check there.
@@ -176,14 +176,14 @@ def test_daemon_start_obs_clients_skips_unreachable(monkeypatch: pytest.MonkeyPa
     """A host that won't connect just gets logged; daemon continues."""
     from unittest.mock import MagicMock, patch
 
-    from sdac.obs.client import OBSConnectError
+    from deckctl.obs.client import OBSConnectError
 
-    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "abc")
+    monkeypatch.setenv("DECKCTL_TEST_OBS_PASS", "abc")
     device = MockDevice()
     d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
     d.load()
 
-    with patch("sdac.daemon.OBSClient") as oc:
+    with patch("deckctl.daemon.OBSClient") as oc:
         instance = MagicMock()
         instance.start.side_effect = OBSConnectError("nope")
         oc.return_value = instance
@@ -193,11 +193,11 @@ def test_daemon_start_obs_clients_skips_unreachable(monkeypatch: pytest.MonkeyPa
 
 def test_daemon_start_obs_clients_keeps_successful_ones(monkeypatch: pytest.MonkeyPatch):
     from unittest.mock import MagicMock, patch
-    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "abc")
+    monkeypatch.setenv("DECKCTL_TEST_OBS_PASS", "abc")
     device = MockDevice()
     d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
     d.load()
-    with patch("sdac.daemon.OBSClient") as oc:
+    with patch("deckctl.daemon.OBSClient") as oc:
         instance = MagicMock()
         instance.start.return_value = None
         oc.return_value = instance

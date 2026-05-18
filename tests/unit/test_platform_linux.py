@@ -14,7 +14,7 @@ WINDOWS = sys.platform.startswith("win")
 if WINDOWS:
     pytest.skip("Linux platform shim", allow_module_level=True)
 
-from sdac.platform._linux import (  # noqa: E402
+from deckctl.platform._linux import (  # noqa: E402
     media_next,
     media_pause,
     media_play,

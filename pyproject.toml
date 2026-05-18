@@ -3,8 +3,8 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "streamdeck-as-code"
-version = "0.1.0"
+name = "deckctl"
+version = "0.2.0"
 description = "Cross-platform declarative Stream Deck driver: YAML config, hot reload, OBS integration."
 readme = "README.md"
 license = { text = "MIT" }
@@ -60,19 +60,19 @@ windows = [
 ]
 
 [project.scripts]
-sdac = "sdac.cli:main"
+deckctl = "deckctl.cli:main"
 
 [project.urls]
-Repository = "https://github.com/solomonneas/streamdeck-as-code"
-Issues = "https://github.com/solomonneas/streamdeck-as-code/issues"
-Documentation = "https://github.com/solomonneas/streamdeck-as-code/tree/main/docs"
-Changelog = "https://github.com/solomonneas/streamdeck-as-code/blob/main/CHANGELOG.md"
+Repository = "https://github.com/solomonneas/deckctl"
+Issues = "https://github.com/solomonneas/deckctl/issues"
+Documentation = "https://github.com/solomonneas/deckctl/tree/main/docs"
+Changelog = "https://github.com/solomonneas/deckctl/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sdac"]
+packages = ["src/deckctl"]
 
 [tool.hatch.build.targets.wheel.shared-data]
-"src/sdac/assets" = "sdac/assets"
+"src/deckctl/assets" = "deckctl/assets"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -91,9 +91,9 @@ ignore = ["E501"]
 python_version = "3.11"
 strict = true
 warn_unused_ignores = true
-files = ["src/sdac"]
+files = ["src/deckctl"]
 
 [[tool.mypy.overrides]]
-module = ["sdac.watchers._linux", "sdac.watchers._windows"]
+module = ["deckctl.watchers._linux", "deckctl.watchers._windows"]
 ignore_missing_imports = true
 follow_imports = "skip"

@@ -1,8 +1,8 @@
-# streamdeck-as-code
+# deckctl
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 4 (current). `sdac daemon` runs on Linux end-to-end including auto-profile-switching driven by the focused window (X11). Windows daemon code is in place (keys + media + active-window watcher) but the Task Scheduler install verb + Windows volume control are queued for Phase 4b. OBS execution + live indicators work as of Phase 3.
+**Status:** Phase 4 (current). `deckctl daemon` runs on Linux end-to-end including auto-profile-switching driven by the focused window (X11). Windows daemon code is in place (keys + media + active-window watcher) but the Task Scheduler install verb + Windows volume control are queued for Phase 4b. OBS execution + live indicators work as of Phase 3.
 
 ## Capabilities (Phase 1 + 2a + 2b + 3 + 4)
 
@@ -15,22 +15,22 @@ Cross-platform declarative driver for the Elgato Stream Deck. One YAML config pr
 - Execute OBS actions over the LAN: scene switch, recording/streaming/replay/virtualcam toggle, audio mute.
 - Live state indicators: keys bound to OBS recording/streaming/replay/scene/mute auto-update when OBS state changes.
 - **Auto profile switching:** define `profile_rules:` matching `app_class` (Linux) or `app_name` (Windows); the daemon switches profiles when the focused window matches.
-- Install as a systemd user unit with one command (`sdac install-service`). Daemon autostarts at login.
-- `sdac doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
+- Install as a systemd user unit with one command (`deckctl install-service`). Daemon autostarts at login.
+- `deckctl doctor` reports on device, deps, service status, config, and OBS reachability — exits non-zero on any FAIL.
 
 ## Install
 
 Recommended (pipx, isolated):
 
 ```bash
-pipx install streamdeck-as-code
+pipx install deckctl
 ```
 
 From source:
 
 ```bash
-git clone https://github.com/solomonneas/streamdeck-as-code
-cd streamdeck-as-code
+git clone https://github.com/solomonneas/deckctl
+cd deckctl
 pipx install --editable .
 ```
 
@@ -49,7 +49,7 @@ sudo apt install -y libhidapi-libusb0 xdotool playerctl
 
 ```bash
 # 1. Write a config
-$ cat > ~/.config/sdac/config.yaml <<'YAML'
+$ cat > ~/.config/deckctl/config.yaml <<'YAML'
 version: 1
 default_profile: coding
 profiles:
@@ -64,11 +64,11 @@ profiles:
 YAML
 
 # 2. Validate
-$ sdac validate ~/.config/sdac/config.yaml
-OK: ~/.config/sdac/config.yaml (1 profile(s), 1 key(s) configured)
+$ deckctl validate ~/.config/deckctl/config.yaml
+OK: ~/.config/deckctl/config.yaml (1 profile(s), 1 key(s) configured)
 
 # 3. Preview as PNG (no device needed)
-$ sdac preview ~/.config/sdac/config.yaml --out preview.png
+$ deckctl preview ~/.config/deckctl/config.yaml --out preview.png
 Wrote preview.png (392x232)
 ```
 
@@ -79,44 +79,44 @@ See [`docs/schema.md`](docs/schema.md) for the full YAML reference.
 Run the daemon against a plugged-in Stream Deck MK.2:
 
 ```bash
-sdac daemon --config ~/.config/sdac/config.yaml -v
+deckctl daemon --config ~/.config/deckctl/config.yaml -v
 ```
 
 Or against an in-memory mock device (no hardware required — useful for testing your config):
 
 ```bash
-sdac daemon --config ~/.config/sdac/config.yaml --mock -v
+deckctl daemon --config ~/.config/deckctl/config.yaml --mock -v
 ```
 
-The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `sdac install-service` command that registers a systemd user unit so it autostarts at login.
+The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `deckctl install-service` command that registers a systemd user unit so it autostarts at login.
 
 Edit the config file while the daemon is running — it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
 
 ## Install as a service (Phase 2b, Linux)
 
-Once your config works the way you want via `sdac daemon`, register it as a systemd user unit so it autostarts at login:
+Once your config works the way you want via `deckctl daemon`, register it as a systemd user unit so it autostarts at login:
 
 ```bash
-sdac install-service --config ~/.config/sdac/config.yaml
+deckctl install-service --config ~/.config/deckctl/config.yaml
 ```
 
 This:
-1. Writes `~/.config/systemd/user/sdac.service` pointing at your config.
+1. Writes `~/.config/systemd/user/deckctl.service` pointing at your config.
 2. Installs `/etc/udev/rules.d/60-streamdeck.rules` via `sudo` (prompts once for your password) so the device is reachable to any logged-in user — needed for the unit to find the Deck at boot.
 3. Reloads udev, daemon-reloads systemd, enables and starts the service.
 
 To stop and remove:
 
 ```bash
-sdac uninstall-service        # removes systemd unit AND udev rule (sudo)
-sdac uninstall-service --keep-udev   # leaves the udev rule in place
+deckctl uninstall-service        # removes systemd unit AND udev rule (sudo)
+deckctl uninstall-service --keep-udev   # leaves the udev rule in place
 ```
 
 Health check at any time:
 
 ```bash
-sdac doctor                                      # full report
-sdac doctor --config ~/.config/sdac/config.yaml  # also validates the config
+deckctl doctor                                      # full report
+deckctl doctor --config ~/.config/deckctl/config.yaml  # also validates the config
 ```
 
 Output is a tabular `PASS / WARN / FAIL` per check (device, libhidapi, python_deps, system_binaries, udev, service, config). Exit code is non-zero if any check fails.
@@ -196,7 +196,7 @@ Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_
 | `profile.switch` | Switch active profile manually. |
 | `compound` | Sequence of actions. |
 
-Phase 1 validates these in the schema but only `sdac preview` executes (rendering icons). Actual key-press dispatch ships in Phase 2.
+Phase 1 validates these in the schema but only `deckctl preview` executes (rendering icons). Actual key-press dispatch ships in Phase 2.
 
 ## Hardware
 
@@ -205,8 +205,8 @@ Phase 1 targets the Elgato Stream Deck MK.2 (15 keys, 72x72 JPEG per key). Archi
 ## Development
 
 ```bash
-git clone https://github.com/solomonneas/streamdeck-as-code
-cd streamdeck-as-code
+git clone https://github.com/solomonneas/deckctl
+cd deckctl
 python3.12 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
 ruff check src tests
@@ -217,7 +217,7 @@ pytest -q
 Regenerate renderer goldens:
 
 ```bash
-SDAC_REGEN=1 pytest tests/unit/test_render.py
+DECKCTL_REGEN=1 pytest tests/unit/test_render.py
 git status tests/fixtures/goldens/  # inspect before committing
 ```
 

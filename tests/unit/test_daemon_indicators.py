@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-import sdac.actions  # noqa: F401
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
-from sdac.obs.client import OBSEvent
+import deckctl.actions  # noqa: F401
+from deckctl.daemon import Daemon
+from deckctl.device import MockDevice
+from deckctl.obs.client import OBSEvent
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 
@@ -75,7 +75,7 @@ def test_obs_event_with_no_change_is_noop():
 
 
 def test_obs_host_url_lookup(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("SDAC_TEST_OBS_PASS", "letmein")
+    monkeypatch.setenv("DECKCTL_TEST_OBS_PASS", "letmein")
     device = MockDevice()
     d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
     d.load()

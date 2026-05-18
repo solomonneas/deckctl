@@ -101,9 +101,9 @@ Any string field can include `${VAR_NAME}`. Resolution happens before schema val
 ```yaml
 obs_hosts:
   roc:
-    url: obsws://127.0.0.1:4455/${SDAC_OBS_ROC_PASS}
+    url: obsws://127.0.0.1:4455/${DECKCTL_OBS_ROC_PASS}
 ```
 
 ## File permissions
 
-On POSIX, `sdac` warns when the config file is readable by group or others (mode bits `0o077`). Pass `--strict-perms` to reject instead. Recommended: `chmod 0600`.
+On POSIX, `deckctl` warns when the config file is readable by group or others (mode bits `0o077`). Pass `--strict-perms` to reject instead. Recommended: `chmod 0600`.

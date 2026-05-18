@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from sdac.watchers import ActiveWindow
-from sdac.watchers.mock import MockWatcher
+from deckctl.watchers import ActiveWindow
+from deckctl.watchers.mock import MockWatcher
 
 
 def test_mock_watcher_fires_on_inject():

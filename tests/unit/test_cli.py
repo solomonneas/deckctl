@@ -2,8 +2,8 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from sdac import __version__
-from sdac.cli import main
+from deckctl import __version__
+from deckctl.cli import main
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 
@@ -90,7 +90,7 @@ def test_daemon_command_uses_mock_device_when_flag_set(tmp_path: Path):
     )
     runner = CliRunner()
     from unittest.mock import patch
-    with patch("sdac.daemon.Daemon.run_forever", return_value=None):
+    with patch("deckctl.daemon.Daemon.run_forever", return_value=None):
         result = runner.invoke(main, ["daemon", "--config", str(cfg), "--mock"])
     assert result.exit_code == 0, result.output
     assert "starting" in result.output.lower()
@@ -110,13 +110,13 @@ def test_install_service_calls_install_with_resolved_paths(tmp_path: Path):
     )
     from unittest.mock import patch
     runner = CliRunner()
-    with patch("sdac.service.install_service") as inst:
+    with patch("deckctl.service.install_service") as inst:
         result = runner.invoke(main, ["install-service", "--config", str(cfg)])
     assert result.exit_code == 0, result.output
     inst.assert_called_once()
     kwargs = inst.call_args.kwargs
     assert kwargs["config_path"] == str(cfg.resolve())
-    assert "sdac" in kwargs["sdac_path"].lower()
+    assert "deckctl" in kwargs["deckctl_path"].lower()
 
 
 def test_install_service_errors_when_config_missing(tmp_path: Path):
@@ -128,7 +128,7 @@ def test_install_service_errors_when_config_missing(tmp_path: Path):
 def test_uninstall_service_invokes_uninstall():
     from unittest.mock import patch
     runner = CliRunner()
-    with patch("sdac.service.uninstall_service") as un:
+    with patch("deckctl.service.uninstall_service") as un:
         result = runner.invoke(main, ["uninstall-service"])
     assert result.exit_code == 0, result.output
     un.assert_called_once_with(remove_udev=True)
@@ -137,7 +137,7 @@ def test_uninstall_service_invokes_uninstall():
 def test_uninstall_service_keep_udev_flag():
     from unittest.mock import patch
     runner = CliRunner()
-    with patch("sdac.service.uninstall_service") as un:
+    with patch("deckctl.service.uninstall_service") as un:
         result = runner.invoke(main, ["uninstall-service", "--keep-udev"])
     assert result.exit_code == 0, result.output
     un.assert_called_once_with(remove_udev=False)
@@ -165,13 +165,13 @@ def test_doctor_with_config_path():
 
 
 def test_doctor_exit_nonzero_on_any_fail():
-    """If any check returns FAIL, sdac doctor exits non-zero."""
+    """If any check returns FAIL, deckctl doctor exits non-zero."""
     from unittest.mock import patch
 
-    from sdac.doctor import CheckResult, Severity
+    from deckctl.doctor import CheckResult, Severity
 
     fail_result = [CheckResult(name="device", severity=Severity.FAIL, message="x")]
     runner = CliRunner()
-    with patch("sdac.doctor.run_all_checks", return_value=fail_result):
+    with patch("deckctl.doctor.run_all_checks", return_value=fail_result):
         result = runner.invoke(main, ["doctor"])
     assert result.exit_code != 0

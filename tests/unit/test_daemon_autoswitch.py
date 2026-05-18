@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import sdac.actions  # noqa: F401
-from sdac.daemon import Daemon
-from sdac.device import MockDevice
-from sdac.watchers import ActiveWindow
-from sdac.watchers.mock import MockWatcher
+import deckctl.actions  # noqa: F401
+from deckctl.daemon import Daemon
+from deckctl.device import MockDevice
+from deckctl.watchers import ActiveWindow
+from deckctl.watchers.mock import MockWatcher
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
 

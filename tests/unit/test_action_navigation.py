@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import sdac.actions  # noqa: F401
-from sdac.actions import get_handler
-from sdac.config import PageGoAction, ProfileSwitchAction
+import deckctl.actions  # noqa: F401
+from deckctl.actions import get_handler
+from deckctl.config import PageGoAction, ProfileSwitchAction
 
 
 class _RecordingCtx:

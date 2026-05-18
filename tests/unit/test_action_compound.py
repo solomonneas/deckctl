@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-import sdac.actions  # noqa: F401
-from sdac.actions import get_handler
-from sdac.config import CompoundAction, ShellAction
+import deckctl.actions  # noqa: F401
+from deckctl.actions import get_handler
+from deckctl.config import CompoundAction, ShellAction
 
 
 class _NullCtx:

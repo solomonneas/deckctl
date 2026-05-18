@@ -5,10 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-05-18
+
+### Changed (breaking)
+
+- **Project renamed from `streamdeck-as-code` to `deckctl`.**
+- Binary renamed from `sdac` to `deckctl`. Old `sdac` command no longer exists.
+- Python package renamed from `sdac` to `deckctl`. All imports change: `from sdac.X` → `from deckctl.X`.
+- Distribution name on PyPI is now `deckctl`. Install with `pipx install deckctl`.
+- Env-var prefix renamed: `SDAC_REGEN`, `SDAC_TEST_OBS_PASS` → `DECKCTL_REGEN`, `DECKCTL_TEST_OBS_PASS`.
+- systemd unit renamed: `sdac.service` → `deckctl.service`. Run `deckctl uninstall-service` on v0.1.0 then `deckctl install-service` on v0.2.0 to migrate.
+- GitHub repo URL: `github.com/solomonneas/streamdeck-as-code` redirects to `github.com/solomonneas/deckctl`.
+
+### Compatibility
+
+- YAML config schema is unchanged. Existing v0.1.0 configs work as-is.
+- v0.1.0 wheels at the old release URL still install via the GitHub redirect.
+
 ## [0.1.0] - 2026-05-17
 
 Initial public release. Covers Phase 1 through Phase 4 of the implementation roadmap
-(see `docs/superpowers/specs/2026-05-17-streamdeck-as-code-design.md`).
+(see `docs/superpowers/specs/2026-05-17-deckctl-design.md`).
 
 ### Added
 
@@ -16,9 +33,9 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 - Pydantic v2 schema for the YAML config (discriminated union over 21 action types).
 - `${ENV_VAR}` substitution across the entire parsed YAML tree.
 - POSIX file permission check (`--strict-perms`).
-- `sdac validate <config>` CLI verb.
+- `deckctl validate <config>` CLI verb.
 - Pillow + Pilmoji icon renderer (text, emoji, image-background, state variants).
-- `sdac preview <config>` CLI verb — renders the full profile as a mosaic PNG.
+- `deckctl preview <config>` CLI verb — renders the full profile as a mosaic PNG.
 - Bundled rsms/inter v4.0 Inter-Bold.ttf for deterministic icon rendering.
 - GitHub Actions CI on Ubuntu + Windows, Python 3.11 + 3.12.
 
@@ -28,13 +45,13 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 - Synchronous threaded daemon, hot-reload via `watchdog`.
 - Built-in action handlers: `shell`, `key.chord`, `key.text`, `open.url`, `open.app`, `system.volume.up/down/mute`, `media.play/pause/next/prev`, `page.go`, `profile.switch`, `compound`.
 - Linux platform shim (xdotool / pactl / playerctl). Windows stubs.
-- `sdac daemon --config <path> [--mock]` CLI verb.
+- `deckctl daemon --config <path> [--mock]` CLI verb.
 - Device hotplug resilience + SIGINT/SIGTERM clean shutdown.
 
 **Phase 2b — Service install + doctor**
-- `sdac install-service` writes a systemd user unit + udev rule via sudo.
-- `sdac uninstall-service` reverses; `--keep-udev` opt.
-- `sdac doctor` reports device, libhidapi, python_deps, system_binaries, udev, service, config, and OBS reachability.
+- `deckctl install-service` writes a systemd user unit + udev rule via sudo.
+- `deckctl uninstall-service` reverses; `--keep-udev` opt.
+- `deckctl doctor` reports device, libhidapi, python_deps, system_binaries, udev, service, config, and OBS reachability.
 
 **Phase 3 — OBS integration**
 - All 6 OBS action handlers execute via `obs-cmd` shell-out.
@@ -50,7 +67,7 @@ Initial public release. Covers Phase 1 through Phase 4 of the implementation roa
 
 ### Deferred to Phase 4b
 
-- Windows `sdac install-service` path (Task Scheduler at logon).
+- Windows `deckctl install-service` path (Task Scheduler at logon).
 - pycaw integration for Windows volume control.
 
 ### Deferred to Phase 5b

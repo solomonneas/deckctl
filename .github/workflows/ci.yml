@@ -28,4 +28,4 @@ jobs:
       - name: Tests
         env:
           PILMOJI_USE_CACHE: "1"
-        run: pytest -q --cov=sdac --cov-report=term-missing
+        run: pytest -q --cov=deckctl --cov-report=term-missing
