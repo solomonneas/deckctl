@@ -175,3 +175,57 @@ def test_doctor_exit_nonzero_on_any_fail():
     with patch("deckctl.doctor.run_all_checks", return_value=fail_result):
         result = runner.invoke(main, ["doctor"])
     assert result.exit_code != 0
+
+
+def test_init_list_prints_available_presets():
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "--list"])
+    assert result.exit_code == 0, result.output
+    assert "default" in result.output
+    assert "coding" in result.output
+    assert "streaming-twitch" in result.output
+    assert "streaming-youtube" in result.output
+
+
+def test_init_unknown_name_errors():
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "nonexistent"])
+    assert result.exit_code == 1
+    assert "unknown preset" in result.output.lower()
+
+
+def test_init_writes_default_preset_to_chosen_path(tmp_path: Path):
+    out = tmp_path / "config.yaml"
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default", "--to", str(out)])
+    assert result.exit_code == 0, result.output
+    assert out.exists()
+    text = out.read_text()
+    assert "version: 1" in text
+    assert "default_profile: default" in text
+
+
+def test_init_refuses_to_overwrite_existing_without_force(tmp_path: Path):
+    out = tmp_path / "config.yaml"
+    out.write_text("# existing config\n")
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default", "--to", str(out)])
+    assert result.exit_code == 2
+    assert "already exists" in result.output.lower()
+    assert out.read_text() == "# existing config\n"  # unchanged
+
+
+def test_init_force_overwrites(tmp_path: Path):
+    out = tmp_path / "config.yaml"
+    out.write_text("# existing\n")
+    runner = CliRunner()
+    result = runner.invoke(main, ["init", "default", "--to", str(out), "--force"])
+    assert result.exit_code == 0, result.output
+    assert "version: 1" in out.read_text()
+
+
+def test_init_no_args_shows_usage_with_preset_list():
+    runner = CliRunner()
+    result = runner.invoke(main, ["init"])
+    assert result.exit_code != 0
+    assert "coding" in result.output or "default" in result.output

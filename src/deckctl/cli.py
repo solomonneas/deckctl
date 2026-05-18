@@ -179,3 +179,48 @@ def doctor(config_path: str | None) -> None:
     click.echo(render_report(results))
     if any(r.severity is Severity.FAIL for r in results):
         sys.exit(7)
+
+
+@main.command()
+@click.argument("name", required=False)
+@click.option("--list", "list_only", is_flag=True, help="List available presets and exit.")
+@click.option(
+    "--to",
+    "dest",
+    type=click.Path(dir_okay=False, writable=True),
+    default=None,
+    help="Destination path. Defaults to ~/.config/deckctl/config.yaml.",
+)
+@click.option("--force", is_flag=True, help="Overwrite destination if it exists.")
+def init(name: str | None, list_only: bool, dest: str | None, force: bool) -> None:
+    """Write a bundled preset YAML to a config path."""
+    import contextlib
+
+    from deckctl.presets import get_preset, list_presets
+
+    presets = list_presets()
+    if list_only:
+        for n, desc in sorted(presets.items()):
+            click.echo(f"  {n:22} {desc}")
+        return
+    if name is None:
+        click.echo("usage: deckctl init <preset-name> [--to PATH] [--force]", err=True)
+        click.echo("", err=True)
+        click.echo("Available presets:", err=True)
+        for n, desc in sorted(presets.items()):
+            click.echo(f"  {n:22} {desc}", err=True)
+        sys.exit(2)
+    if name not in presets:
+        click.echo(f"unknown preset {name!r}; run `deckctl init --list` to see options", err=True)
+        sys.exit(1)
+    target = Path(dest) if dest else Path.home() / ".config" / "deckctl" / "config.yaml"
+    if target.exists() and not force:
+        click.echo(f"{target} already exists. Pass --force to overwrite.", err=True)
+        sys.exit(2)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    yaml_text = get_preset(name)
+    target.write_text(yaml_text)
+    with contextlib.suppress(OSError):
+        target.chmod(0o600)  # Windows + tmpfs ignore chmod; not fatal
+    click.echo(f"Wrote {target}")
+    click.echo("Edit it to customize, then run `deckctl daemon --config <path>`.")
