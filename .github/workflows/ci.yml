@@ -28,4 +28,5 @@ jobs:
       - name: Tests
         env:
           PILMOJI_USE_CACHE: "1"
+          PYTHONUTF8: "1"   # Windows: force UTF-8 for stdio + default file encoding
         run: pytest -q --cov=deckctl --cov-report=term-missing

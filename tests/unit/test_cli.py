@@ -200,7 +200,7 @@ def test_init_writes_default_preset_to_chosen_path(tmp_path: Path):
     result = runner.invoke(main, ["init", "default", "--to", str(out)])
     assert result.exit_code == 0, result.output
     assert out.exists()
-    text = out.read_text()
+    text = out.read_text(encoding="utf-8")
     assert "version: 1" in text
     assert "default_profile: default" in text
 
@@ -212,7 +212,7 @@ def test_init_refuses_to_overwrite_existing_without_force(tmp_path: Path):
     result = runner.invoke(main, ["init", "default", "--to", str(out)])
     assert result.exit_code == 2
     assert "already exists" in result.output.lower()
-    assert out.read_text() == "# existing config\n"  # unchanged
+    assert out.read_text(encoding="utf-8") == "# existing config\n"  # unchanged
 
 
 def test_init_force_overwrites(tmp_path: Path):
@@ -221,7 +221,7 @@ def test_init_force_overwrites(tmp_path: Path):
     runner = CliRunner()
     result = runner.invoke(main, ["init", "default", "--to", str(out), "--force"])
     assert result.exit_code == 0, result.output
-    assert "version: 1" in out.read_text()
+    assert "version: 1" in out.read_text(encoding="utf-8")
 
 
 def test_init_no_args_shows_usage_with_preset_list():
