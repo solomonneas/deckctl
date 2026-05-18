@@ -1,0 +1,42 @@
+# deckctl default preset — minimal 3-key smoke layout.
+# Use after first install to verify everything works, then edit or replace
+# with a richer preset like `deckctl init coding`.
+
+version: 1
+default_profile: default
+
+profiles:
+  default:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon:
+              text: "Hello"
+              emoji: "👋"
+              bg: "#1e88e5"
+            action:
+              type: shell
+              cmd: "notify-send 'deckctl' 'hello from key 0' || echo 'hello from key 0'"
+          7:
+            icon:
+              text: "Type"
+              emoji: "⌨️"
+              bg: "#43a047"
+            action:
+              type: key.text
+              text: "deckctl works"
+          14:
+            icon:
+              text: "AUTO"
+              emoji: "🤖"
+              bg: "#1565c0"
+              fg: "#ffffff"
+            action:
+              type: compound
+              actions:
+                - type: key.text
+                  text: "defer to your decisions, scope/plan/execute autonomously, skip the question loop"
+                - type: key.chord
+                  keys: "Return"

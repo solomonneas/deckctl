@@ -15,7 +15,9 @@ from __future__ import annotations
 
 from importlib.resources import files
 
-DESCRIPTIONS: dict[str, str] = {}
+DESCRIPTIONS: dict[str, str] = {
+    "default": "Minimal 3-key smoke layout. Use after install to verify everything works.",
+}
 
 
 def list_presets() -> dict[str, str]:
