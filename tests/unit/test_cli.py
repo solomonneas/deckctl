@@ -244,13 +244,18 @@ def test_init_default_path_honors_xdg_config_home(tmp_path: Path, monkeypatch):
 
 
 def test_init_default_path_falls_back_to_home_dot_config(tmp_path: Path, monkeypatch):
-    """When XDG_CONFIG_HOME is unset, write to ~/.config/deckctl/config.yaml."""
+    """When XDG_CONFIG_HOME is unset, write to ~/.config/deckctl/config.yaml.
+
+    Patches `Path.home()` directly because Windows uses USERPROFILE, not HOME,
+    so setting only $HOME does not redirect Path.home() on Windows runners.
+    """
     monkeypatch.delenv("XDG_CONFIG_HOME", raising=False)
-    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    fake_home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: fake_home))
     runner = CliRunner()
     result = runner.invoke(main, ["init", "default"])
     assert result.exit_code == 0, result.output
-    expected = tmp_path / "home" / ".config" / "deckctl" / "config.yaml"
+    expected = fake_home / ".config" / "deckctl" / "config.yaml"
     assert expected.exists()
 
 
