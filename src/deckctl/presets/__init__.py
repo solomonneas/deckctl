@@ -17,6 +17,7 @@ from importlib.resources import files
 
 DESCRIPTIONS: dict[str, str] = {
     "default": "Minimal 3-key smoke layout. Use after install to verify everything works.",
+    "coding": "Dev workflow: tests/build/lint, git page, snippets page, tmux page, scripts page, Claude + Codex launchers.",
 }
 
 
