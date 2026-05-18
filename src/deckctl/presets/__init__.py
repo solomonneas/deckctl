@@ -19,6 +19,7 @@ DESCRIPTIONS: dict[str, str] = {
     "default": "Minimal 3-key smoke layout. Use after install to verify everything works.",
     "coding": "Dev workflow: tests/build/lint, git page, snippets page, tmux page, scripts page, Claude + Codex launchers.",
     "streaming-twitch": "Twitch streaming: 5 scenes, record/stream/replay/v-cam toggles with live indicators, mic mute, chat + dashboard launchers.",
+    "streaming-youtube": "YouTube streaming: 5 scenes, record/stream/replay/v-cam toggles with live indicators, mic mute, chat + Studio launchers.",
 }
 
 

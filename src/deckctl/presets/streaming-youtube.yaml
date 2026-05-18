@@ -1,0 +1,95 @@
+# deckctl streaming-youtube preset.
+#
+# Customize:
+# - Replace <video-id> in the Chat URL (key 10) with your active live-stream
+#   video ID, OR change it to https://studio.youtube.com/livestreaming.
+# - Replace OBS scene names with whatever you've actually named your scenes.
+# - Set DECKCTL_OBS_LOCAL_PASS in your environment before running the daemon.
+# - If your microphone source isn't named "Mic/Aux", edit key 9.
+
+version: 1
+default_profile: streaming-youtube
+
+obs_hosts:
+  local:
+    url: obsws://127.0.0.1:4455/${DECKCTL_OBS_LOCAL_PASS}
+
+profiles:
+  streaming-youtube:
+    default_page: home
+    pages:
+      home:
+        keys:
+          0:
+            icon: {text: "Cam", emoji: "📷", bg: "#1e88e5"}
+            action: {type: obs.scene.switch, host: local, scene: "Camera"}
+          1:
+            icon: {text: "Screen", emoji: "🖥️", bg: "#7b1fa2"}
+            action: {type: obs.scene.switch, host: local, scene: "Screen"}
+          2:
+            icon: {text: "BRB", emoji: "⏸", bg: "#fb8c00"}
+            action: {type: obs.scene.switch, host: local, scene: "BRB"}
+          3:
+            icon: {text: "Start", emoji: "👋", bg: "#43a047"}
+            action: {type: obs.scene.switch, host: local, scene: "Starting Soon"}
+          4:
+            icon: {text: "End", emoji: "🏁", bg: "#6d4c41"}
+            action: {type: obs.scene.switch, host: local, scene: "Ending"}
+          5:
+            icon:
+              text: "REC"
+              emoji: "🔴"
+              bg_idle: "#424242"
+              bg_active: "#d32f2f"
+              fg: "#ffffff"
+            indicator: {bind: obs.recording.state, host: local}
+            action: {type: obs.recording.toggle, host: local}
+          6:
+            icon:
+              text: "LIVE"
+              emoji: "📡"
+              bg_idle: "#424242"
+              bg_active: "#ff0000"
+              fg: "#ffffff"
+            indicator: {bind: obs.streaming.state, host: local}
+            action: {type: obs.streaming.toggle, host: local}
+          7:
+            icon: {text: "Replay", emoji: "💾", bg: "#1565c0", fg: "#ffffff"}
+            action: {type: obs.replay.save, host: local}
+          8:
+            icon:
+              text: "V-Cam"
+              emoji: "🎥"
+              bg_idle: "#424242"
+              bg_active: "#1976d2"
+              fg: "#ffffff"
+            indicator: {bind: obs.virtualcam.state, host: local}
+            action: {type: obs.virtualcam.toggle, host: local}
+          9:
+            icon:
+              text: "Mic"
+              emoji: "🎤"
+              bg_idle: "#388e3c"
+              bg_active: "#d32f2f"
+              fg: "#ffffff"
+            indicator: {bind: obs.input.muted, host: local, input_name: "Mic/Aux"}
+            action: {type: obs.input.mute.toggle, host: local, input_name: "Mic/Aux"}
+          10:
+            icon: {text: "Chat", emoji: "💬", bg: "#ff0000", fg: "#ffffff"}
+            action: {type: open.url, url: "https://www.youtube.com/live_chat?v=<video-id>"}
+          11:
+            icon: {text: "Studio", emoji: "📊", bg: "#cc0000", fg: "#ffffff"}
+            action: {type: open.url, url: "https://studio.youtube.com/"}
+          12:
+            icon: {text: "Vol-", emoji: "🔉", bg: "#37474f"}
+            action: {type: system.volume.down, step: 5}
+          13:
+            icon: {text: "Vol+", emoji: "🔊", bg: "#37474f"}
+            action: {type: system.volume.up, step: 5}
+          14:
+            icon: {text: "AUTO", emoji: "🤖", bg: "#1565c0", fg: "#ffffff"}
+            action:
+              type: compound
+              actions:
+                - {type: key.text, text: "defer to your decisions, scope/plan/execute autonomously, skip the question loop"}
+                - {type: key.chord, keys: "Return"}
