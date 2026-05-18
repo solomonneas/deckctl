@@ -2,7 +2,7 @@
 
 Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 4 (current). `deckctl daemon` runs on Linux end-to-end including auto-profile-switching driven by the focused window (X11). Windows daemon code is in place (keys + media + active-window watcher) but the Task Scheduler install verb + Windows volume control are queued for Phase 4b. OBS execution + live indicators work as of Phase 3.
+**Status:** Phase 6 (current, v0.3.0). Bundled preset library — `deckctl init coding` writes a working dev profile (5 pages, Claude + Codex launchers, AUTO key); `deckctl init streaming-twitch` or `streaming-youtube` for streamers. Plus everything from v0.2.0: `deckctl daemon` with full action grammar, OBS integration + live indicators, auto profile switching, systemd service install on Linux, Windows port (Task Scheduler install in Phase 4b).
 
 ## Capabilities (Phase 1 + 2a + 2b + 3 + 4)
 
@@ -48,28 +48,19 @@ sudo apt install -y libhidapi-libusb0 xdotool playerctl
 ## Quick start
 
 ```bash
-# 1. Write a config
-$ cat > ~/.config/deckctl/config.yaml <<'YAML'
-version: 1
-default_profile: coding
-profiles:
-  coding:
-    default_page: home
-    pages:
-      home:
-        keys:
-          0:
-            icon: {text: "Tests", emoji: "🧪", bg: "#1e88e5"}
-            action: {type: shell, cmd: "pnpm test"}
-YAML
+# 1. Install + a starter config in one shot
+pipx install deckctl
+deckctl init coding   # or `default`, `streaming-twitch`, `streaming-youtube`
+deckctl init --list   # see all available presets
 
-# 2. Validate
-$ deckctl validate ~/.config/deckctl/config.yaml
-OK: ~/.config/deckctl/config.yaml (1 profile(s), 1 key(s) configured)
+# 2. Validate (no device required)
+deckctl validate ~/.config/deckctl/config.yaml
 
-# 3. Preview as PNG (no device needed)
-$ deckctl preview ~/.config/deckctl/config.yaml --out preview.png
-Wrote preview.png (392x232)
+# 3. Preview as PNG (no device required)
+deckctl preview ~/.config/deckctl/config.yaml --out preview.png
+
+# 4. Run the daemon
+deckctl daemon --config ~/.config/deckctl/config.yaml -v
 ```
 
 See [`docs/schema.md`](docs/schema.md) for the full YAML reference.

@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-18
+
+### Added
+
+- **Preset library + `deckctl init <preset>`** — bundled YAMLs you can drop into your config with one command:
+  - `default` (3-key smoke layout)
+  - `coding` (dev workflow with 5 pages: home, git, snippets, terminal, scripts; includes Claude + Codex launch buttons)
+  - `streaming-twitch` (15 keys: 5 OBS scenes, record/stream/replay/virtual-cam toggles with live indicators, mic mute, Twitch chat + dashboard)
+  - `streaming-youtube` (same shape as Twitch with YouTube Studio + chat URLs)
+- Every preset includes an **AUTO** key on the bottom-right that types an autonomous-mode trigger phrase + Enter into the focused terminal/Claude prompt.
+- `deckctl init --list` shows available presets and one-line descriptions.
+- `deckctl init <name> [--to PATH] [--force]` writes the chosen preset.
+
+### Notes
+
+- No schema changes, no new action types. All presets use the existing v1 schema. Existing configs continue to work unchanged.
+- Streaming presets require `DECKCTL_OBS_LOCAL_PASS` in the environment before running the daemon (paste from OBS > Tools > WebSocket Server Settings).
+- Claude/Codex launch buttons in the coding preset use `x-terminal-emulator` (Debian/Ubuntu alternatives entry). On other distros, edit the shell.cmd to your terminal of choice.
+
 ## [0.2.0] - 2026-05-18
 
 ### Changed (breaking)
