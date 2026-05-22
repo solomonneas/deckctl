@@ -19,3 +19,14 @@ preview*.png
 **/memory-handoffs/
 .cursor/
 .windsurf/
+
+# Claude Code + research surface
+.claude/
+.codex/
+.learnings/
+docs/superpowers/
+**/memory-handoffs/
+
+# OpenClaw files
+.openclaw/
+*.sqlite
