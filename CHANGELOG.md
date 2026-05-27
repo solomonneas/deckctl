@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Linux: X11 active-window watcher no longer floods syslog when the display socket dies.** `ConnectionClosedError` now stops the watcher with a single warning, unavailable displays disable the watcher cleanly, and other poll errors are rate-limited instead of logging full stack traces every 250ms.
+
 ## [0.3.1] - 2026-05-18
 
 ### Fixed
