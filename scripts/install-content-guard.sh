@@ -3,7 +3,7 @@
 # Claude artifacts + secret patterns before allowing a push. Idempotent.
 #
 # Pattern list is base64-encoded below so the literal strings (e.g. personal
-# hostnames) never appear verbatim in this tracked file — otherwise the hook
+# hostnames) never appear verbatim in this tracked file - otherwise the hook
 # itself would block pushes of this installer.
 
 set -euo pipefail

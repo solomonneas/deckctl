@@ -1,4 +1,4 @@
-# Elgato Stream Deck — grant uaccess to the active logged-in user.
+# Elgato Stream Deck - grant uaccess to the active logged-in user.
 # Installed by `deckctl install-service`. Apply: `sudo udevadm control --reload-rules && sudo udevadm trigger`.
 
 # Vendor: Elgato Systems GmbH (0fd9)
