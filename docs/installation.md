@@ -17,10 +17,10 @@ sudo apt install -y \
 
 ## 2. Python package
 
-Recommended via pipx (isolated):
+Recommended via pipx (isolated). deckctl is not on PyPI yet (publishing is planned), so install straight from the repo:
 
 ```bash
-pipx install deckctl
+pipx install git+https://github.com/solomonneas/deckctl
 deckctl --version
 ```
 

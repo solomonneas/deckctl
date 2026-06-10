@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Project renamed from `streamdeck-as-code` to `deckctl`.**
 - Binary renamed from `sdac` to `deckctl`. Old `sdac` command no longer exists.
 - Python package renamed from `sdac` to `deckctl`. All imports change: `from sdac.X` → `from deckctl.X`.
-- Distribution name on PyPI is now `deckctl`. Install with `pipx install deckctl`.
+- Distribution name is now `deckctl` (PyPI publishing under that name is planned; until then install with `pipx install git+https://github.com/solomonneas/deckctl`).
 - Env-var prefix renamed: `SDAC_REGEN`, `SDAC_TEST_OBS_PASS` → `DECKCTL_REGEN`, `DECKCTL_TEST_OBS_PASS`.
 - systemd unit renamed: `sdac.service` → `deckctl.service`. Run `deckctl uninstall-service` on v0.1.0 then `deckctl install-service` on v0.2.0 to migrate.
 - GitHub repo URL: `github.com/solomonneas/streamdeck-as-code` redirects to `github.com/solomonneas/deckctl`.

@@ -20,10 +20,10 @@ Cross-platform declarative driver for the Elgato Stream Deck. One YAML config pr
 
 ## Install
 
-Recommended (pipx, isolated):
+Recommended (pipx, isolated). The package is not on PyPI yet (publishing is planned), so install straight from the repo:
 
 ```bash
-pipx install deckctl
+pipx install git+https://github.com/solomonneas/deckctl
 ```
 
 From source:
@@ -48,8 +48,8 @@ sudo apt install -y libhidapi-libusb0 xdotool playerctl
 ## Quick start
 
 ```bash
-# 1. Install + a starter config in one shot
-pipx install deckctl
+# 1. Install + a starter config in one shot (not on PyPI yet, install from the repo)
+pipx install git+https://github.com/solomonneas/deckctl
 deckctl init coding   # or `default`, `streaming-twitch`, `streaming-youtube`
 deckctl init --list   # see all available presets
 
