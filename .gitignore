@@ -13,16 +13,12 @@ htmlcov/
 preview*.png
 !tests/fixtures/goldens/*.png
 
-# Claude / superpowers artifacts (per repo-hygiene rule)
+# Agent artifacts + research surface (per repo-hygiene rule)
 .claude/
 .claude.local/
-**/memory-handoffs/
+.codex/
 .cursor/
 .windsurf/
-
-# Claude Code + research surface
-.claude/
-.codex/
 .learnings/
 docs/superpowers/
 **/memory-handoffs/
