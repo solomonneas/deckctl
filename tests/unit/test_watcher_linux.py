@@ -4,11 +4,12 @@ import sys
 from unittest.mock import MagicMock
 
 import pytest
-from Xlib import error as xerror
 
 WINDOWS = sys.platform.startswith("win")
 if WINDOWS:
     pytest.skip("Linux X11 watcher", allow_module_level=True)
+
+from Xlib import error as xerror  # noqa: E402
 
 from deckctl.watchers._linux import LinuxX11Watcher, _wm_class_for_window  # noqa: E402
 from deckctl.watchers.base import ActiveWindow  # noqa: E402
