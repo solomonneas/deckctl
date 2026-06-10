@@ -1,10 +1,10 @@
 # deckctl
 
-Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; later phases ship a daemon that talks to the device directly over USB HID with live OBS state integration.
+Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; the daemon talks to the device directly over USB HID with live OBS state integration.
 
-**Status:** Phase 6 (current, v0.3.0). Bundled preset library - `deckctl init coding` writes a working dev profile (5 pages, Claude + Codex launchers, AUTO key); `deckctl init streaming-twitch` or `streaming-youtube` for streamers. Plus everything from v0.2.0: `deckctl daemon` with full action grammar, OBS integration + live indicators, auto profile switching, systemd service install on Linux, Windows port (Task Scheduler install in Phase 4b).
+**Status:** v0.3.1. `deckctl daemon` with the full action grammar, OBS integration + live indicators, auto profile switching, a bundled preset library (`deckctl init coding`, `streaming-twitch`, `streaming-youtube`), and systemd service install on Linux. The daemon and actions also run on Windows; autostart-at-login install (`deckctl install-service`) is Linux-only for now, with a Task Scheduler equivalent planned.
 
-## Capabilities (Phase 1 + 2a + 2b + 3 + 4)
+## Capabilities
 
 - Validate a YAML config against the full v1 schema (Pydantic 2 discriminated union over 21 action types).
 - Resolve `${ENV_VAR}` in any string field - keep passwords out of the YAML.
@@ -36,7 +36,7 @@ pipx install --editable .
 
 ### Linux runtime dependencies
 
-Phase 2+ actions shell out to a few system utilities. On Ubuntu / Debian:
+Several actions shell out to system utilities. On Ubuntu / Debian:
 
 ```bash
 sudo apt install -y libhidapi-libusb0 xdotool playerctl
@@ -65,7 +65,7 @@ deckctl daemon --config ~/.config/deckctl/config.yaml -v
 
 See [`docs/schema.md`](docs/schema.md) for the full YAML reference.
 
-## Daemon (Phase 2a, Linux)
+## Daemon
 
 Run the daemon against a plugged-in Stream Deck MK.2:
 
@@ -79,11 +79,11 @@ Or against an in-memory mock device (no hardware required - useful for testing y
 deckctl daemon --config ~/.config/deckctl/config.yaml --mock -v
 ```
 
-The daemon stays in the foreground. Use `Ctrl+C` to stop. Phase 2b will add a `deckctl install-service` command that registers a systemd user unit so it autostarts at login.
+The daemon stays in the foreground. Use `Ctrl+C` to stop. To autostart it at login instead, see the next section.
 
 Edit the config file while the daemon is running - it'll hot-reload within ~1s. Invalid configs are logged and rejected; the daemon keeps the previous valid config.
 
-## Install as a service (Phase 2b, Linux)
+## Install as a service (Linux)
 
 Once your config works the way you want via `deckctl daemon`, register it as a systemd user unit so it autostarts at login:
 
@@ -112,7 +112,7 @@ deckctl doctor --config ~/.config/deckctl/config.yaml  # also validates the conf
 
 Output is a tabular `PASS / WARN / FAIL` per check (device, libhidapi, python_deps, system_binaries, udev, service, config). Exit code is non-zero if any check fails.
 
-## OBS integration (Phase 3)
+## OBS integration
 
 Configure one or more OBS instances under `obs_hosts:` in your config, then any `obs.*` action can target them by name:
 
@@ -148,7 +148,7 @@ Indicators support:
 - `obs.scene.current` - match a `scene:` name; key is active when that scene is the current program scene
 - `obs.input.muted` - match an `input_name:`; key is active when that audio input is muted
 
-## Auto profile switching (Phase 4)
+## Auto profile switching
 
 Add `profile_rules:` to your config to switch profiles automatically when the focused application changes:
 
@@ -170,7 +170,7 @@ profile_rules:
 default_profile: coding
 ```
 
-Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_ACTIVE_WINDOW` + `WM_CLASS`; Windows uses `GetForegroundWindow` + the process basename. Both poll every 250ms - fast enough to feel instant. Wayland is not supported in Phase 4 (the daemon falls back to "no auto-switch" if it can't open an X display).
+Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_ACTIVE_WINDOW` + `WM_CLASS`; Windows uses `GetForegroundWindow` + the process basename. Both poll every 250ms - fast enough to feel instant. Wayland is not supported yet (the daemon falls back to "no auto-switch" if it can't open an X display).
 
 ## Action grammar (v1)
 
@@ -187,11 +187,11 @@ Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_
 | `profile.switch` | Switch active profile manually. |
 | `compound` | Sequence of actions. |
 
-Phase 1 validates these in the schema but only `deckctl preview` executes (rendering icons). Actual key-press dispatch ships in Phase 2.
+All of these are validated by `deckctl validate` and dispatched live by `deckctl daemon`. `deckctl preview` renders the icons without touching a device.
 
 ## Hardware
 
-Phase 1 targets the Elgato Stream Deck MK.2 (15 keys, 72x72 JPEG per key). Architecture is hardware-agnostic; XL/Mini/Plus support is queued for a later phase.
+deckctl targets the Elgato Stream Deck MK.2 (15 keys, 72x72 JPEG per key). Architecture is hardware-agnostic; XL/Mini/Plus support is planned.
 
 ## Development
 
