@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import subprocess
 from unittest.mock import patch
 
 import deckctl.actions  # noqa: F401 - ensures handlers are registered
@@ -26,7 +28,18 @@ def test_shell_action_invokes_subprocess_run_with_shell_true():
     args, kwargs = run.call_args
     assert args[0] == "echo hi"
     assert kwargs.get("shell") is True
-    assert kwargs.get("check") is True
+    assert kwargs.get("check") is False
+
+
+def test_shell_action_logs_nonzero_exit_status(caplog):
+    action = ShellAction(type="shell", cmd="exit 7")
+    result = subprocess.CompletedProcess(args=action.cmd, returncode=7)
+    with (
+        caplog.at_level(logging.WARNING, logger="deckctl.actions.shell"),
+        patch("subprocess.run", return_value=result),
+    ):
+        get_handler("shell").execute(action, _NullCtx())
+    assert "shell action exited with status 7" in caplog.text
 
 
 def test_shell_action_with_cwd_passes_cwd_to_subprocess():

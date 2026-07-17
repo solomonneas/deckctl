@@ -1,9 +1,8 @@
 """Daemon orchestrator.
 
 Owns the device and config. Handles key-press dispatch via the action registry.
-The daemon is synchronous: key callbacks (from the device's HID thread or a
-mock's direct call) run handlers in-line. Phase 3 will add background event
-loops for OBS websocket subscriptions.
+Key callbacks hand actions to background threads so a slow handler cannot
+block later device events.
 """
 
 from __future__ import annotations
@@ -14,12 +13,17 @@ import threading
 from pathlib import Path
 
 from PIL import Image
-from watchdog.events import FileSystemEvent, FileSystemEventHandler
+from watchdog.events import (
+    DirMovedEvent,
+    FileMovedEvent,
+    FileSystemEvent,
+    FileSystemEventHandler,
+)
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
 from deckctl.actions import get_handler
-from deckctl.config import Config, Indicator, ProfileRule, load_config
+from deckctl.config import Action, Config, Indicator, ProfileRule, load_config
 from deckctl.device import Device, KeyEvent
 from deckctl.obs.client import OBSClient, OBSConnectError, OBSEvent
 from deckctl.render import KEY_SIZE, render_key
@@ -233,8 +237,11 @@ class Daemon:
                     daemon._reload()
 
             def on_created(self, event: FileSystemEvent) -> None:
-                # Editors that write via rename use create-then-rename.
                 if Path(str(event.src_path)).resolve() == daemon._config_path.resolve():
+                    daemon._reload()
+
+            def on_moved(self, event: DirMovedEvent | FileMovedEvent) -> None:
+                if Path(str(event.dest_path)).resolve() == daemon._config_path.resolve():
                     daemon._reload()
 
         self._observer = Observer()
@@ -319,11 +326,19 @@ class Daemon:
             key_cfg = page.keys.get(event.key)
         if key_cfg is None:
             return
+        threading.Thread(
+            target=self._execute_action,
+            args=(key_cfg.action, event.key),
+            name=f"deckctl-action-{event.key}",
+            daemon=True,
+        ).start()
+
+    def _execute_action(self, action: Action, key: int) -> None:
         try:
-            handler = get_handler(key_cfg.action.type)
-            handler.execute(key_cfg.action, self)
+            handler = get_handler(action.type)
+            handler.execute(action, self)
         except Exception:
-            log.exception("action %r on key %d raised", key_cfg.action.type, event.key)
+            log.exception("action %r on key %d raised", action.type, key)
 
     def run_forever(self) -> None:
         """Block until SIGINT / SIGTERM. Used by the `deckctl daemon` CLI verb."""

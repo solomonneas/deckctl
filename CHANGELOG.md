@@ -9,14 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Key actions now run on background daemon threads, so a slow shell command does not block later device callbacks. Nonzero shell exits are logged by status instead of raising a traceback.
+- Config hot-reload now handles move events from editors that replace the file with an atomic rename.
 - **Linux: X11 active-window watcher no longer floods syslog when the display socket dies.** `ConnectionClosedError` now stops the watcher with a single warning, unavailable displays disable the watcher cleanly, and other poll errors are rate-limited instead of logging full stack traces every 250ms.
 - **Windows CI: test collection no longer crashes.** `tests/unit/test_watcher_linux.py` imported `Xlib` above its platform skip guard; python-xlib is Linux-only, so both Windows matrix jobs failed at collection. The import now sits below the guard.
 
 ### Docs
 
+- Replaced OBS host examples with synthetic names, RFC 5737 addresses, and valid environment-variable syntax.
+- Documented the current Windows volume-control limitation and content-guard setup.
 - Install instructions point at `pipx install git+https://github.com/solomonneas/deckctl` since the package is not on PyPI yet (publishing is planned).
 - README status refreshed to v0.3.1 and internal phase numbering removed.
 - Added `AGENTS.md` with dev commands, goldens regeneration recipe, and writing rules for coding agents.
+
+### CI
+
+- Updated checkout and setup-python to their current Node 24 releases.
 
 ## [0.3.1] - 2026-05-18
 

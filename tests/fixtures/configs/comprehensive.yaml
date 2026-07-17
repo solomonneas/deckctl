@@ -48,14 +48,14 @@ profiles:
         keys:
           0:
             icon: {text: "Cam", bg: "#1e88e5"}
-            action: {type: obs.scene.switch, host: roc, scene: "Camera"}
+            action: {type: obs.scene.switch, host: studio, scene: "Camera"}
           1:
             icon:
               text: "REC"
               bg_idle: "#424242"
               bg_active: "#d32f2f"
-            indicator: {bind: obs.recording.state, host: roc}
-            action: {type: obs.recording.toggle, host: roc}
+            indicator: {bind: obs.recording.state, host: studio}
+            action: {type: obs.recording.toggle, host: studio}
           2:
             icon: {text: "Volume"}
             action: {type: system.volume.up, step: 5}

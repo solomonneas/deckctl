@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import logging
+import os
+import threading
+import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -12,6 +15,15 @@ from deckctl.device import MockDevice
 from deckctl.errors import ConfigError
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "configs"
+
+
+def _wait_until(predicate, timeout: float = 1.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.01)
+    return predicate()
 
 
 def test_daemon_loads_config_and_renders_default_profile_home_page():
@@ -33,8 +45,45 @@ def test_daemon_dispatches_key_press_to_handler():
     d.render_current_page()
     with patch("subprocess.run") as run:
         device.inject_press(0)  # key 0 on coding/home is a shell action
+        assert _wait_until(lambda: run.call_count == 1)
     # Press fires once; release should not dispatch again.
     assert run.call_count == 1
+
+
+def test_daemon_key_callback_returns_while_action_runs():
+    device = MockDevice()
+    d = Daemon(device=device, config_path=FIXTURES / "comprehensive.yaml")
+    d.load()
+
+    action_started = threading.Event()
+    action_finished = threading.Event()
+    unblock_action = threading.Event()
+    callback_finished = threading.Event()
+
+    def slow_run(*args, **kwargs):
+        del args, kwargs
+        action_started.set()
+        try:
+            assert unblock_action.wait(timeout=2)
+        finally:
+            action_finished.set()
+
+    def press_key() -> None:
+        try:
+            device.inject_press(0)
+        finally:
+            callback_finished.set()
+
+    with patch("subprocess.run", side_effect=slow_run):
+        callback_thread = threading.Thread(target=press_key)
+        callback_thread.start()
+        assert action_started.wait(timeout=1)
+        try:
+            assert callback_finished.wait(timeout=0.25)
+        finally:
+            unblock_action.set()
+            callback_thread.join(timeout=1)
+        assert action_finished.wait(timeout=1)
 
 
 def test_daemon_page_go_navigates_within_profile():
@@ -45,9 +94,9 @@ def test_daemon_page_go_navigates_within_profile():
     device.images_pushed.clear()
     # key 5 on coding/home has action page.go(page=git)
     device.inject_press(5)
-    assert d.current_page == "git"
+    assert _wait_until(lambda: d.current_page == "git")
     # render after page change pushed all 15 keys again
-    assert set(device.images_pushed.keys()) == set(range(15))
+    assert _wait_until(lambda: set(device.images_pushed) == set(range(15)))
 
 
 def test_daemon_profile_switch_changes_profile_and_resets_to_default_page():
@@ -57,7 +106,7 @@ def test_daemon_profile_switch_changes_profile_and_resets_to_default_page():
     d.render_current_page()
     # key 6 on coding/home has action profile.switch(profile=streaming)
     device.inject_press(6)
-    assert d.current_profile == "streaming"
+    assert _wait_until(lambda: d.current_profile == "streaming")
     assert d.current_page == "home"  # streaming.default_page
 
 
@@ -86,6 +135,7 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
         patch("subprocess.run", side_effect=boom),
     ):
         device.inject_press(0)
+        assert _wait_until(lambda: bool(caplog.records))
     assert any(
         "boom" in rec.message or "boom" in str(rec.exc_info) for rec in caplog.records
     )
@@ -98,6 +148,7 @@ def test_daemon_handler_exception_does_not_crash_daemon(caplog):
     if not sys.platform.startswith("win"):
         with patch("subprocess.run") as run:
             device.inject_press(1)
+            assert _wait_until(lambda: run.call_count == 1)
         assert run.call_count == 1
 
 
@@ -137,6 +188,45 @@ def test_daemon_hot_reload_picks_up_new_config(tmp_path: Path):
     )
 
     import time
+    for _ in range(50):  # up to 5 seconds
+        time.sleep(0.1)
+        if d.current_profile == "b":
+            break
+    d.stop_watching()
+    assert d.current_profile == "b"
+
+
+def test_daemon_hot_reload_picks_up_atomic_replace(tmp_path: Path):
+    cfg_path = tmp_path / "live.yaml"
+    cfg_path.write_text(
+        "version: 1\n"
+        "default_profile: a\n"
+        "profiles:\n"
+        "  a:\n"
+        "    default_page: home\n"
+        "    pages:\n"
+        "      home:\n"
+        "        keys: {}\n"
+    )
+    device = MockDevice()
+    d = Daemon(device=device, config_path=cfg_path)
+    d.load()
+    d.render_current_page()
+    d.start_watching()
+
+    replacement = tmp_path / "replacement.yaml"
+    replacement.write_text(
+        "version: 1\n"
+        "default_profile: b\n"
+        "profiles:\n"
+        "  b:\n"
+        "    default_page: home\n"
+        "    pages:\n"
+        "      home:\n"
+        "        keys: {}\n"
+    )
+    os.replace(replacement, cfg_path)
+
     for _ in range(50):  # up to 5 seconds
         time.sleep(0.1)
         if d.current_profile == "b":
