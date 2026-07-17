@@ -17,7 +17,7 @@ def test_indicator_active_initially_false():
     d = Daemon(device=device, config_path=FIXTURES / "comprehensive.yaml")
     d.load()
     d.render_current_page()
-    # streaming/home/key 1 has indicator bind=obs.recording.state host=roc
+    # streaming/home/key 1 has indicator bind=obs.recording.state host=studio
     rec_key = d._config.profiles["streaming"].pages["home"].keys[1]
     assert d._indicator_active(rec_key.indicator) is False
 
@@ -30,7 +30,7 @@ def test_on_obs_event_updates_state_map():
     d.switch_profile("streaming")
     device.images_pushed.clear()
     d.on_obs_event(OBSEvent(
-        host="roc", kind="obs.recording.state", qualifier=None, active=True,
+        host="studio", kind="obs.recording.state", qualifier=None, active=True,
     ))
     rec_key = d._config.profiles["streaming"].pages["home"].keys[1]
     assert d._indicator_active(rec_key.indicator) is True
@@ -56,11 +56,11 @@ def test_obs_scene_change_flips_previously_active():
     d = Daemon(device=device, config_path=FIXTURES / "comprehensive.yaml")
     d.load()
     d.switch_profile("streaming")
-    d.on_obs_event(OBSEvent(host="roc", kind="obs.scene.current", qualifier="Camera", active=True))
-    assert d._indicator_state.get(("obs.scene.current", "roc", "Camera")) is True
-    d.on_obs_event(OBSEvent(host="roc", kind="obs.scene.current", qualifier="Lobby", active=True))
-    assert d._indicator_state[("obs.scene.current", "roc", "Camera")] is False
-    assert d._indicator_state[("obs.scene.current", "roc", "Lobby")] is True
+    d.on_obs_event(OBSEvent(host="studio", kind="obs.scene.current", qualifier="Camera", active=True))
+    assert d._indicator_state.get(("obs.scene.current", "studio", "Camera")) is True
+    d.on_obs_event(OBSEvent(host="studio", kind="obs.scene.current", qualifier="Lobby", active=True))
+    assert d._indicator_state[("obs.scene.current", "studio", "Camera")] is False
+    assert d._indicator_state[("obs.scene.current", "studio", "Lobby")] is True
 
 
 def test_obs_event_with_no_change_is_noop():
@@ -68,9 +68,9 @@ def test_obs_event_with_no_change_is_noop():
     d = Daemon(device=device, config_path=FIXTURES / "comprehensive.yaml")
     d.load()
     d.switch_profile("streaming")
-    d.on_obs_event(OBSEvent(host="roc", kind="obs.recording.state", qualifier=None, active=True))
+    d.on_obs_event(OBSEvent(host="studio", kind="obs.recording.state", qualifier=None, active=True))
     device.images_pushed.clear()
-    d.on_obs_event(OBSEvent(host="roc", kind="obs.recording.state", qualifier=None, active=True))
+    d.on_obs_event(OBSEvent(host="studio", kind="obs.recording.state", qualifier=None, active=True))
     assert device.images_pushed == {}
 
 
@@ -79,8 +79,8 @@ def test_obs_host_url_lookup(monkeypatch: pytest.MonkeyPatch):
     device = MockDevice()
     d = Daemon(device=device, config_path=FIXTURES / "env_var.yaml")
     d.load()
-    url = d.obs_host_url("roc")
-    assert url == "obsws://127.0.0.1:4455/letmein"
+    url = d.obs_host_url("studio")
+    assert url == "obsws://192.0.2.10:4455/letmein"
 
 
 def test_obs_host_url_unknown_raises():

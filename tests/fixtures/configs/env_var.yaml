@@ -1,8 +1,8 @@
 version: 1
 default_profile: streaming
 obs_hosts:
-  roc:
-    url: obsws://127.0.0.1:4455/${DECKCTL_TEST_OBS_PASS}
+  studio:
+    url: obsws://192.0.2.10:4455/${DECKCTL_TEST_OBS_PASS}
 profiles:
   streaming:
     default_page: home
@@ -11,4 +11,4 @@ profiles:
         keys:
           0:
             icon: {text: "Cam"}
-            action: {type: obs.scene.switch, host: roc, scene: "Camera"}
+            action: {type: obs.scene.switch, host: studio, scene: "Camera"}

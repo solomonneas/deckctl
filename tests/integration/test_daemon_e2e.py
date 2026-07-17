@@ -23,6 +23,15 @@ from deckctl.device import MockDevice
 FIXTURE = Path(__file__).parent.parent / "fixtures" / "configs" / "daemon_smoke.yaml"
 
 
+def _wait_until(predicate, timeout: float = 1.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.01)
+    return predicate()
+
+
 def test_full_lifecycle_against_mock_device(tmp_path: Path):
     # Copy fixture to a writable location so we can edit it during the run.
     cfg = tmp_path / "smoke.yaml"
@@ -40,17 +49,20 @@ def test_full_lifecycle_against_mock_device(tmp_path: Path):
         # Shell action (key 0): subprocess.run is called with "true"
         with patch("subprocess.run") as run:
             device.inject_press(0)
+            assert _wait_until(lambda: run.call_count == 1)
         assert run.call_count == 1
         assert run.call_args.args[0] == "true"
 
         # Chord action (key 1) - goes through platform.send_chord -> subprocess.run
         with patch("deckctl.platform._linux.subprocess.run") as run:
             device.inject_press(1)
+            assert _wait_until(lambda: run.call_count == 1)
         run.assert_called_with(["xdotool", "key", "ctrl+t"], check=True)
 
         # Volume up (key 2)
         with patch("deckctl.platform._linux.subprocess.run") as run:
             device.inject_press(2)
+            assert _wait_until(lambda: run.call_count == 1)
         run.assert_called_with(
             ["pactl", "set-sink-volume", "@DEFAULT_SINK@", "+2%"], check=True
         )
@@ -58,16 +70,17 @@ def test_full_lifecycle_against_mock_device(tmp_path: Path):
         # Compound (key 3 - two shell sub-actions)
         with patch("subprocess.run") as run:
             device.inject_press(3)
+            assert _wait_until(lambda: run.call_count == 2)
         assert run.call_count == 2
 
         # Page navigation (key 4)
         device.inject_press(4)
-        assert d.current_page == "other"
+        assert _wait_until(lambda: d.current_page == "other")
 
         # Back-nav from the other page (key 0 on "other" goes back to home)
         device.images_pushed.clear()
         device.inject_press(0)
-        assert d.current_page == "home"
+        assert _wait_until(lambda: d.current_page == "home")
 
         # Hot reload: rewrite config so default_profile changes
         cfg.write_text(

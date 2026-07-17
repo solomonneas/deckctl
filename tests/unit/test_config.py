@@ -74,13 +74,13 @@ def test_icon_state_variant_colors_optional():
     assert rec_key.icon.bg_active == "#d32f2f"
     assert rec_key.indicator is not None
     assert rec_key.indicator.bind == "obs.recording.state"
-    assert rec_key.indicator.host == "roc"
+    assert rec_key.indicator.host == "studio"
 
 
 def test_env_var_substitution(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("DECKCTL_TEST_OBS_PASS", "secret-from-env")
     cfg = load_config(FIXTURES / "env_var.yaml")
-    assert cfg.obs_hosts["roc"].url == "obsws://127.0.0.1:4455/secret-from-env"
+    assert cfg.obs_hosts["studio"].url == "obsws://192.0.2.10:4455/secret-from-env"
 
 
 def test_env_var_missing_raises(monkeypatch: pytest.MonkeyPatch):

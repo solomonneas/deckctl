@@ -100,8 +100,8 @@ Any string field can include `${VAR_NAME}`. Resolution happens before schema val
 
 ```yaml
 obs_hosts:
-  roc:
-    url: obsws://127.0.0.1:4455/${DECKCTL_OBS_ROC_PASS}
+  studio:
+    url: obsws://192.0.2.10:4455/${DECKCTL_OBS_STUDIO_PASS}
 ```
 
 ## File permissions

@@ -1,8 +1,8 @@
 # deckctl
 
-Cross-platform declarative driver for the Elgato Stream Deck. One YAML config produces identical behavior on Linux and Windows; the daemon talks to the device directly over USB HID with live OBS state integration.
+Cross-platform declarative driver for the Elgato Stream Deck. Linux and Windows use the same YAML schema, with platform-specific action support. The daemon talks to the device directly over USB HID and can display live OBS state.
 
-**Status:** v0.3.1. `deckctl daemon` with the full action grammar, OBS integration + live indicators, auto profile switching, a bundled preset library (`deckctl init coding`, `streaming-twitch`, `streaming-youtube`), and systemd service install on Linux. The daemon and actions also run on Windows; autostart-at-login install (`deckctl install-service`) is Linux-only for now, with a Task Scheduler equivalent planned.
+**Status:** v0.3.1. `deckctl daemon` supports the full action grammar, OBS integration and live indicators, automatic profile switching, bundled presets (`deckctl init coding`, `streaming-twitch`, `streaming-youtube`), and systemd service installation on Linux. Most actions run on Windows; `system.volume.*` and `deckctl install-service` are Linux-only.
 
 ## Capabilities
 
@@ -118,10 +118,10 @@ Configure one or more OBS instances under `obs_hosts:` in your config, then any 
 
 ```yaml
 obs_hosts:
-  roc:
-    url: obsws://127.0.0.1:4455/${OBS_ROC_PASS}
-  windows-host:
-    url: obsws://192.168.x.y:4455/${OBS_windows-host_PASS}
+  studio:
+    url: obsws://192.0.2.10:4455/${OBS_STUDIO_PASS}
+  laptop:
+    url: obsws://198.51.100.20:4455/${OBS_LAPTOP_PASS}
 
 profiles:
   streaming:
@@ -131,14 +131,14 @@ profiles:
         keys:
           0:
             icon: {text: "Cam", bg: "#1e88e5"}
-            action: {type: obs.scene.switch, host: roc, scene: "Camera"}
+            action: {type: obs.scene.switch, host: studio, scene: "Camera"}
           1:
             icon:
               text: "REC"
               bg_idle: "#424242"
               bg_active: "#d32f2f"
-            indicator: {bind: obs.recording.state, host: roc}
-            action: {type: obs.recording.toggle, host: roc}
+            indicator: {bind: obs.recording.state, host: studio}
+            action: {type: obs.recording.toggle, host: studio}
 ```
 
 Actions execute via `obs-cmd` on PATH. The daemon also opens a WebSocket connection to each `obs_hosts` entry on startup to subscribe to state events; the REC key above turns red when OBS is actually recording, and back to gray when it stops. Hosts that aren't reachable at daemon startup are logged and skipped - actions targeting them will simply fail at dispatch time.
@@ -187,7 +187,7 @@ Rules are evaluated top-to-bottom; the first match wins. Linux uses X11's `_NET_
 | `profile.switch` | Switch active profile manually. |
 | `compound` | Sequence of actions. |
 
-All of these are validated by `deckctl validate` and dispatched live by `deckctl daemon`. `deckctl preview` renders the icons without touching a device.
+All of these are validated by `deckctl validate` and dispatched by `deckctl daemon`. On Windows, `system.volume.*` currently raises `NotImplementedError`. `deckctl preview` renders the icons without touching a device.
 
 ## Hardware
 
@@ -200,6 +200,7 @@ git clone https://github.com/solomonneas/deckctl
 cd deckctl
 python3.12 -m venv .venv && . .venv/bin/activate
 pip install -e ".[dev]"
+./scripts/install-content-guard.sh
 ruff check src tests
 mypy src
 pytest -q
